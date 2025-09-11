@@ -45,6 +45,16 @@ registerFunction(scriptName, message => {
     description: "Tried to spam steam gift code scams"
   })
 
+  if (content.length > 550 && [3, 4, 5].includes(content.match(/https:\/\/media\.discordapp\.net\/attachments\/.+\?/g)?.length) && content.startsWith('https://media')) {
+    let no_link_message = content.replace(/https:\/\/media\.discordapp\.net\/attachments\/[^\s]+/g, '').replace('@everyone', '');
+    if (no_link_message.length < 6 && !(message.member?.roles?.color)) {
+      return handleSpam({
+        type: "Image link spam",
+        description: "Tried to spam multiple images in one message with no context"
+      })
+    }
+  }
+
   // General russian bots
   if (
     content.length > 30 && content.length < 180 &&
