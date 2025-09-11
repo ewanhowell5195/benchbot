@@ -11,10 +11,13 @@ registerPrefixCommand(scriptName, prefixPath, {
       label: `Post ${i + 1}`,
       url: `https://discord.com/channels/${config.guild}/${config.channels.archive}/${e}`
     }))
-    if (!posts.length) return sendMessage(message, {
-      title: "No posts",
-      description: `${args[0]} does not have any Modeling Enthusiast worthy posts`
-    })
+    if (!posts.length) {
+      return sendMessage(message, {
+        title: "No posts",
+        description: `${args[0] === message.member ? "You do" : `${args[0]} does`} not have any Modeling Enthusiast worthy posts`,
+        fields: [["Requirements", `You require 40 likes on 4 unique posts to earn the <@&${config.roles.modelingEnthusiast}> role`]]
+      })
+    }
     const components = []
     let items = posts.slice()
     while (items.length) {

@@ -54,7 +54,7 @@ registerPrefixCommand(scriptName, prefixPath, {
         if (type[0] !== "image" || !types.includes(type[1])) {
           return sendError(message, {
             title: "Not a valid image",
-            description: `The provided [file](${image[1].url}) was not an valid image. The supported image types are: \`${types.join("`, `")}\``,
+            description: `The provided [file](${image[1].url}) was not an valid image. The supported image types are: ${quoteList(types)}`,
             processing
           })
         }

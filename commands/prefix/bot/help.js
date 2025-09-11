@@ -54,8 +54,8 @@ registerPrefixCommand(scriptName, prefixPath, {
     const permissions = [...command.permissions]
     if (command.guildOnly) permissions.unshift("GuildOnly")
     if (command.dmOnly) permissions.unshift("DirectMessagesOnly")
-    if (permissions.length > 0) fields.push(["Restricted to", `\`${permissions.map(e => e.toTitleCase(true)).join("`, `")}\``])
-    if (command.aliases) fields.push(["Aliases", `\`${command.aliases.join("`, `")}\``])
+    if (permissions.length > 0) fields.push(["Restricted to", quoteList(permissions.map(e => e.toTitleCase(true)))])
+    if (command.aliases) fields.push(["Aliases", quoteList(command.aliases)])
     if (slash) fields.push(["Slash command", slash])
     const embed = {
       author: [command.name, client.icons.help],

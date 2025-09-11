@@ -10,7 +10,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     const plugins = await cache.plugins()
     if (!args[0]) return sendMessage(message, {
       title: "Available Blockbench Plugins",
-      description: `Use \`${getCommandName(message)} [plugin]\` to view the details about a specific plugin\n\n\`${Object.values(plugins).map(e => e.title).sort().join("`, `")}\``,
+      description: `Use \`${getCommandName(message)} [plugin]\` to view the details about a specific plugin\n\n${quoteList(Object.values(plugins).map(e => e.title).sort())}`,
       deletable: true,
       processing
     })
@@ -18,7 +18,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     const closest = closestMatch(args[0], pluginList)
     if (!closest) return sendError(message, {
       title: "Unknown plugin",
-      description: `The plugin \`${args[0].limit()}\` was not found.\n\n**Available Blockbench Plugins**\n\n\`${Object.values(plugins).map(e => e.title).sort().join("`, `")}\``,
+      description: `The plugin \`${args[0].limit()}\` was not found.\n\n**Available Blockbench Plugins**\n\n${quoteList(Object.values(plugins).map(e => e.title).sort())}`,
       processing
     })
     const plugin = Object.entries(plugins).find(e => e[0] === closest || e[1].title === closest)

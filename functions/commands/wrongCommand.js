@@ -29,7 +29,7 @@ registerFunction(scriptName, (command, message, data) => new Promise(async (fulf
     })],
     ephemeral: false,
     fetch: true,
-    deleteable: false
+    deletable: false
   })
   const author = message.author || message.user
   await interactionHandler(message.commandName ? message : error, async (interaction, collector) => {

@@ -7,6 +7,7 @@ registerLoadIn(scriptName, {
       "help",
       "logs",
       "medalGreen",
+      "optifine",
       "ping",
       "warningRed"
     ].map(e => [e, `https://wynem.com/assets/images/icons/${e.replace(/[A-Z]/g, "_$&").toLowerCase()}.webp`]))

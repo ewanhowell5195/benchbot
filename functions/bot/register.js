@@ -70,7 +70,7 @@ registerFunction(scriptName, {
     command.permissions = prefixCommand?.permissions ?? []
     command.botPermissions = prefixCommand?.botPermissions ?? []
     if (!command.execute) command.execute = (interaction, ...args) => prefixCommand.execute(interaction, args)
-    if (command.options) for (const option of command.options) if (!option.type) option.type === "string"
+    if (command.options) for (const option of command.options) if (!option.type) option.type = "string"
     if (prefixCommand) prefixCommand.slashCommand = command
     command.prefixCommand = prefixCommand
     collection.set(name, command)

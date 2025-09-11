@@ -227,36 +227,39 @@ async function reloadAll() {
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-if (!testMode) {
-  process.on("unhandledRejection", async error => {
-    if (error.message === "Service Unavailable") return
-    try {
-      if (error instanceof Discord.DiscordAPIError) {
-        if (error.message === "Unknown interaction") return
-        await sendMessage(await getChannel(config.channels.errors), {
-          title: "An API error occured",
-          description: `\`${error.message}\`\n\n**Status**\n\`${error.httpStatus}\`\n\n**Request**\n\`${error.method.toUpperCase()} ${error.path}\`\n\n**Data**\n\`\`\`${error.requestData?.json ? `${JSON.stringify(error.requestData.json)}\`\`\`\n` : ""}**Stack**\n\`\`\`${error.stack}`.limit(4093) + "```"
-        })
-      } else {
-        await sendMessage(await getChannel(config.channels.errors), {
-          title: "An error occured",
-          description: `\`${error.message}\`\n\n**Stack**\n\`\`\`${error.stack}`.limit(4093) + "```"
-        })
-      }
-    } catch (err) {
-      console.error(`Error at`, new Date())
-      console.error(err)
-      console.error(`Error at`, new Date())
-      console.error(error.message)
-      if (error instanceof Discord.DiscordAPIError) {
-        console.error(error.httpStatus)
-        console.error(error.method.toUpperCase(), error.path)
-        if (error.requestData?.json) console.error(JSON.stringify(error.requestData.json))
-      }
-      console.error(error.stack)
+process.on("unhandledRejection", async error => {
+  if (testMode) {
+    return console.error(error)
+  }
+  if (error.message === "Service Unavailable") return
+  if (error.errors) {
+    console.error(error)
+  }
+  try {
+    if (error instanceof Discord.DiscordAPIError) {
+      if (error.message === "Unknown interaction") return
+      await sendMessage(await getChannel(config.channels.errors), {
+        title: "An API error occured",
+        description: `\`${error.message}\`\n\n**Status**\n\`${error.httpStatus}\`\n\n**Request**\n\`${error.method.toUpperCase()} ${error.path}\`\n\n**Data**\n\`\`\`${error.requestData?.json ? `${JSON.stringify(error.requestData.json)}\`\`\`\n` : ""}**Stack**\n\`\`\`${error.stack}`.limit(4093) + "```"
+      })
+    } else {
+      await sendMessage(await getChannel(config.channels.errors), {
+        title: "An error occured",
+        description: `\`${error.message}\`\n\n**Stack**\n\`\`\`${error.stack}`.limit(4093) + "```"
+      })
     }
-  })
-}
+  } catch (err) {
+    console.error(`Error at`, new Date())
+    console.error(err)
+    console.error(error.message)
+    if (error instanceof Discord.DiscordAPIError) {
+      console.error(error.httpStatus)
+      console.error(error.method.toUpperCase(), error.path)
+      if (error.requestData?.json) console.error(JSON.stringify(error.requestData.json))
+    }
+    console.error(error.stack)
+  }
+})
 
 //////////////////////////////////////////////////////////////////////////////////////
 

@@ -19,7 +19,7 @@ registerPrefixCommand(scriptName, prefixPath, {
       return sendMessage(message, {
         author: ["FAQ", client.icons.faq],
         description: `Use the command \`${getCommandName(message)} [category] [id]\` to view a specific FAQ entry`,
-        fields: Object.entries(categories).sort((a, b) => a[0].localeCompare(b[0])).map(e => [e[0].toTitleCase(true, true), `\`${e[1].sort().join("`, `")}\``]),
+        fields: Object.entries(categories).sort((a, b) => a[0].localeCompare(b[0])).map(e => [e[0].toTitleCase(true, true), quoteList(e[1].sort())]),
         deletable: true
       })
     }

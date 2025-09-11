@@ -6,7 +6,7 @@ registerFunction(scriptName, {
     data.author = ["Error", client.icons.error]
     data.colour = client.colours.error
     const embed = makeEmbed(message, data)
-    if (!(message.command?.application && data.ephemeral !== false) && data.deleteable !== false) {
+    if (!(message.command?.application && data.ephemeral !== false) && data.deletable !== false) {
       data.components ??= []
       data.components.push(makeRow({
         buttons: [{

@@ -1,0 +1,1 @@
+registerFunction(scriptName, arr => `\`${arr.join("`, `")}\``)

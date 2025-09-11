@@ -55,7 +55,6 @@ export default {
         FROM json_each(json_extract(faqs.data, '$.aliases')) AS alias
         WHERE alias.value = ?
       )
-      OR id = ?
     )
   `, "get", (c, i, a) => [c, i, a, a], o => !!o)
 }
