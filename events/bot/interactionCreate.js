@@ -48,6 +48,23 @@ registerEvent(scriptName, async interaction => {
         return
       }
       return sendPrivateMessage(interaction, { description: "Only the message author can do that" })
+    } else if (interaction.customId === "jobs_access_button") {
+      if (interaction.member.roles.cache.has(config.roles.jobs)) {
+        return sendPrivateMessage(interaction, {
+          description: "You already have access to the job channels"
+        })
+      }
+      interaction.showModal(component.modal("Job Channel Access", [
+        component.text("## Warning\nBe cautious when using the Job Channels. They are not moderated or verified by the server team.\n\n## Verification\nAlways confirm that the people you work with are genuine. Check that portfolios belong to them and that clients can prove they can pay.\n\n## Responsibility\nBy clicking submit, you acknowledge that you understand these risks and will take responsibility for verifying anyone you work with.")
+      ], "jobs_access_modal"))
+    }
+  } else if (interaction.isModalSubmit()) {
+    if (interaction.customId === "jobs_access_modal") {
+      await interaction.member.roles.add(config.roles.jobs)
+      sendPrivateMessage(interaction, {
+        title: "You now have job channel access",
+        description: `The job channels are now available to you:\n\n<#${config.channels.job.artist}>\n<#${config.channels.job.job}>\n<#${config.channels.job.project}>\n\nTo create a post in any of these channels, go to <#${config.channels.commands}> and use the ${await getCommandName(interaction, "job", null, "slash")} command.`
+      })
     }
   }
 })
