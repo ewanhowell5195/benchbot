@@ -4,6 +4,26 @@ registerPrefixCommand(scriptName, prefixPath, {
   },
   aliases: ["newjob", "jobnew"],
   async execute(message) {
+    let member = message.member
+    if (!member.guild) {
+      const guild = client.guilds.cache.get(config.guild)  
+      member = await guild.members.fetch(message.author.id)
+    }
+
+    if (!member) {
+      return sendError(message, {
+        title: "Not in server",
+        description: "You must be in the Blockbench server to use this command"
+      })
+    }
+
+    if (!member.roles.cache.has(config.roles.jobs)) {
+      return sendError(message, {
+        title: "Missing job channel access",
+        description: `You must get access to the job channels before you can use this command\n\nGo to <#${config.channels.job.info}> to get access`
+      })
+    }
+
     const start = await choose(message, {
       description: "Hello! Thank you for being interested in creating a job post! I will guide you through some questions for creating your job post. If you want to cancel the job post creation at any time, just ignore this message and it will time out.\n\n## Important\nThe job channels are just bulletin boards. The server team does not review or manage job posts. It is your responsibility to resolve potential issues with clients/artists.",
       options: ["Start!"],
