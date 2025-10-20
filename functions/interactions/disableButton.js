@@ -1,1 +1,0 @@
-registerFunction(scriptName, (button, disable) => Discord.ButtonBuilder.from(button).setDisabled(disable))

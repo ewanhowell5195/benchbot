@@ -1,11 +1,12 @@
 registerFunction(scriptName, {
   hasPerm(member, perm, channel) {
-    if (perm === null) return true
-    if (!member.guild) return true
-    let has
-    if (channel) has = channel.permissionsFor(member)?.has?.(Discord.PermissionsBitField.Flags[perm] ?? perm)
-    else has = member.permissions.has(Discord.PermissionsBitField.Flags[perm] ?? perm)
-    return has === undefined ? true : has
+    if (!member) return
+    if (perm === null || !member.guild) return true
+    if (channel) {
+      const has = channel.permissionsFor(member)?.has?.(Discord.PermissionsBitField.Flags[perm] ?? perm)
+      return has === undefined ? true : has
+    }
+    return member.permissions.has(Discord.PermissionsBitField.Flags[perm] ?? perm)
   },
   permChecks: {
     react: (member, channel) => hasPerm(member, "AddReactions", channel),

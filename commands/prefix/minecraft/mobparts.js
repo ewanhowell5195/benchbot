@@ -72,6 +72,7 @@ registerPrefixCommand(scriptName, prefixPath, {
       return paginationHandler(message, embeds, {
         selector: {
           name: "Category Name",
+          items: types.map(e => e[0]),
           find: str => embeds.findIndex(e => e.title.toLowerCase().split(" - ")[0].includes(str.toLowerCase()))
         }
       })

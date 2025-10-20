@@ -28,50 +28,46 @@ registerFunction(scriptName, async (message, embeds, args) => {
   const paginator = await sendMessage(message, {
     embeds: [await getEmbed(index)],
     processing: args?.processing,
-    components: [makeRow({
-      buttons: [
-        {
-          customId: "prevend",
-          emoji: client.emotes.arrowLeftEndWhite,
-          disabled: !index
-        },
-        {
-          customId: "prev",
-          emoji: client.emotes.arrowLeftWhite,
-          disabled: !index
-        },
-        {
-          customId: "modal",
-          emoji: client.emotes.textCursorWhite
-        },
-        {
-          customId: "next",
-          emoji: client.emotes.arrowRightWhite,
-          disabled: index === embeds.length - 1
-        },
-        {
-          customId: "nextend",
-          emoji: client.emotes.arrowRightEndWhite,
-          disabled: index === embeds.length - 1
-        }
-      ]
-    })],
+    components: [component.row(
+      component.button({
+        id: "prevend",
+        emoji: client.emotes.arrowLeftEndWhite,
+        disabled: !index
+      }),
+      component.button({
+        id: "prev",
+        emoji: client.emotes.arrowLeftWhite,
+        disabled: !index
+      }),
+      component.button({
+        id: "modal",
+        emoji: client.emotes.textCursorWhite
+      }),
+      component.button({
+        id: "next",
+        emoji: client.emotes.arrowRightWhite,
+        disabled: index === embeds.length - 1
+      }),
+      component.button({
+        id: "nextend",
+        emoji: client.emotes.arrowRightEndWhite,
+        disabled: index === embeds.length - 1
+      })
+    )],
     ephemeral: args?.ephemeral
   })
   await interactionHandler(paginator, async interaction => {
     if (interaction.customId === "modal") {
-      return interaction.showModal(makeModal({
-        id: "custom",
-        title: "Select Page",
-        rows: [{
-          text: {
-            id: "page",
-            label: `Page Number${args?.selector ? ` or ${args?.selector.name}` : ""}`,
-            placeholder: `${embeds.length.toLocaleString()} pages available`,
-            required: true
-          }
-        }]
-      }))
+      return interaction.showModal(component.modal("Select Page", [
+        component.textInput({
+          id: "page",
+          label: `Page Number${args?.selector ? ` or ${args?.selector.name}` : ""}`,
+          description: `Select the Page Number${args?.selector ? ` or ${args?.selector.name}` : ""} to go to. There are ${embeds.length.toLocaleString()} pages available`,
+          placeholder: `Page Number${args?.selector ? ` / ${args?.selector.name}` : ""}`,
+          required: true
+        }),
+        args?.selector.items ? component.text(`\n\n### ${args?.selector.name}s:\n${quoteList(args?.selector.items)}`) : undefined
+      ], "custom"))
     }
     if (interaction.customId === "prevend") {
       index = 0
@@ -107,18 +103,18 @@ registerFunction(scriptName, async (message, embeds, args) => {
     }
     interaction.deferUpdate()
     if (index) {
-      interaction.message.components[0].components[0] = disableButton(interaction.message.components[0].components[0], false)
-      interaction.message.components[0].components[1] = disableButton(interaction.message.components[0].components[1], false)
+      interaction.message.components[0].components[0] = disableComponent(interaction.message.components[0].components[0], false)
+      interaction.message.components[0].components[1] = disableComponent(interaction.message.components[0].components[1], false)
     } else {
-      interaction.message.components[0].components[0] = disableButton(interaction.message.components[0].components[0], true)
-      interaction.message.components[0].components[1] = disableButton(interaction.message.components[0].components[1], true)
+      interaction.message.components[0].components[0] = disableComponent(interaction.message.components[0].components[0])
+      interaction.message.components[0].components[1] = disableComponent(interaction.message.components[0].components[1])
     }
     if (index === embeds.length - 1) {
-      interaction.message.components[0].components[3] = disableButton(interaction.message.components[0].components[3], true)
-      interaction.message.components[0].components[4] = disableButton(interaction.message.components[0].components[4], true)
+      interaction.message.components[0].components[3] = disableComponent(interaction.message.components[0].components[3])
+      interaction.message.components[0].components[4] = disableComponent(interaction.message.components[0].components[4])
     } else {
-      interaction.message.components[0].components[3] = disableButton(interaction.message.components[0].components[3], false)
-      interaction.message.components[0].components[4] = disableButton(interaction.message.components[0].components[4], false)
+      interaction.message.components[0].components[3] = disableComponent(interaction.message.components[0].components[3], false)
+      interaction.message.components[0].components[4] = disableComponent(interaction.message.components[0].components[4], false)
     }
     if (args?.ephemeral) {
       editPrivateMessage(paginator, {

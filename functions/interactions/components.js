@@ -116,7 +116,7 @@ registerFunction(scriptName, {
         }
         select.setOptions(options)
       }
-      select.setCustomId(args.customId ?? Math.random().toString())
+      select.setCustomId(args.id ?? Math.random().toString())
       if (args.placeholder) select.setPlaceholder(args.placeholder)
       if (defined(args.minValues)) select.setMinValues(args.minValues)
       if (args.maxValues) select.setMaxValues(args.maxValues)
