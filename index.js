@@ -65,6 +65,11 @@ String.prototype.toTitleCase = function(c, n) {
   return t.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase()).trim().replace(titlePattern, (a, b) => titleReplacements[b])
 }
 
+globalThis.limit = (str, length = 128) => {
+  if (str.length <= length) return str
+  return str.slice(0, length - 1) + "…"
+}
+
 //////////////////////////////////////////////////////////////////////////////////////
 
 globalThis.client = new Discord.Client({
@@ -140,7 +145,6 @@ const vmContextObject = Object.assign({
   require: createRequire(import.meta.url),
   argTypes: {},
   toTitleCase: String.prototype.toTitleCase,
-  limit: String.prototype.limit,
   loadedFunctions: new Set,
   loadedEvents: new Map,
   loadedLoadIns: new Map,
