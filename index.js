@@ -66,8 +66,8 @@ String.prototype.toTitleCase = function(c, n) {
 }
 
 globalThis.limit = (str, length = 128) => {
-  if (str.length <= length) return str
-  return str.slice(0, length - 1) + "…"
+  if (str.length <= length) return str.trim()
+  return str.slice(0, length - 1).trim() + "…"
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
