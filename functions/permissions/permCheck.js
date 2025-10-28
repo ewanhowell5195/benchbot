@@ -56,9 +56,9 @@ registerFunction(scriptName, async (message, command) => {
       title,
       fields: [
         ["Command", `\`${config.prefix}${message.command.name}\``, false],
-        message.command.application ? [`Command sent by \`${message.author.username}\``, getFullCommand(message)] : [`Message sent by \`${message.author.username}\``, message.content.limit(1024)],
-        ["Error message", `\`${error.message.limit(1000)}\``, false],
-        ["Stack", `\`\`\`${error.stack.toString().limit(1000)}\`\`\``, false]
+        message.command.application ? [`Command sent by \`${message.author.username}\``, getFullCommand(message)] : [`Message sent by \`${message.author.username}\``, limit(message.content, 1024)],
+        ["Error message", `\`${limit(error.message, 1000)}\``, false],
+        ["Stack", `\`\`\`${limit(error.stack.toString(), 1000)}\`\`\``, false]
       ],
       footer: [`ChannelID: ${message.channelId} - UserID: ${message.author.id}`]
     })

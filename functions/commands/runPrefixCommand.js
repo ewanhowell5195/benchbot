@@ -30,7 +30,7 @@ registerFunction(scriptName, async (command, message, args) => {
       if (args[i] instanceof Discord.Message || args[i] === false) return
       else if (args[i] === undefined) return sendError(message, {
         title: `Invalid argument type for \`${argSplit[0].replace(/\?|\*/g, "")}\``,
-        description: `\`${argument.limit()}\` is not a valid \`${argSplit[1].toTitleCase(true)}\``
+        description: `\`${limit(argument)}\` is not a valid \`${argSplit[1].toTitleCase(true)}\``
       })
     }
     if (stop) break

@@ -34,7 +34,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     const match = closestMatch(args[0], faqIds)
     if (!match) return sendError(message, {
       title: "Unknown FAQ",
-      description: `The FAQ \`${args[0].limit()}\` was not found\n\nUse the command \`${getCommandName(message)}\` to view a list of all FAQs`
+      description: `The FAQ \`${limit(args[0])}\` was not found\n\nUse the command \`${getCommandName(message)}\` to view a list of all FAQs`
     })
     const faq = faqs.find(e => e[0] === match || e[1].id === match || e[1].data.aliases?.includes(match))
     sendMessage(message, makeFAQ(faq[1]))

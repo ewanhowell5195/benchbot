@@ -45,7 +45,7 @@ registerArgType(scriptName, async (item, data) => {
   } catch {}
   if (!member && !data.errorless) return sendError(data.message, {
     title: "Member not found",
-    description: `The member \`${item.limit()}\` could not be found`,
+    description: `The member \`${limit(item)}\` could not be found`,
     fetch: true
   })
   return member

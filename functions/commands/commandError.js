@@ -16,9 +16,9 @@ registerFunction(scriptName, async (message, error) => {
         title,
         fields: [
           ["Command", `\`\`${client.prefix}${message.command.name}\`\``, false],
-          [`Message sent by \`${message.author.username}\``, message.content.limit(1024)],
-          ["Error message", `\`\`${error.message.limit(1000)}\`\``, false],
-          ["Stack", `\`\`\`${error.stack.toString().limit(1000)}\`\`\``, false]
+          [`Message sent by \`${message.author.username}\``, limit(message.content, 1024)],
+          ["Error message", `\`\`${limit(error.message, 1000)}\`\``, false],
+          ["Stack", `\`\`\`${limit(error.stack.toString(), 1000)}\`\`\``, false]
         ],
         footer: [`ChannelID: ${message.channelId}\nMessage ID: ${message.id}\nUserID: ${message.author.id}`]
       })
@@ -28,13 +28,15 @@ registerFunction(scriptName, async (message, error) => {
       await sendMessage(await getChannel(config.channels.errors), {
         title,
         fields: [
-          ["Command", getFullCommand(message).toString().limit(1024), false],
+          ["Command", limit(getFullCommand(message).toString(), 1024), false],
           ["Run by", `\`${message.user.username}\``],
-          ["Error message", `\`${error.message.limit(1000)}\``, false],
-          ["Stack", `\`\`\`${error.stack.toString().limit(1000)}\`\`\``, false]
+          ["Error message", `\`${limit(error.message, 1000)}\``, false],
+          ["Stack", `\`\`\`${limit(error.stack.toString(), 1000)}\`\`\``, false]
         ],
         footer: [`ChannelID: ${message.channelId} - UserID: ${message.user.id}`]
       })
     }
-  } catch (e) {console.error(e)}
+  } catch (e) {
+    console.error(e)
+  }
 })

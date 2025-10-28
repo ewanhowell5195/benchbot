@@ -51,7 +51,7 @@ registerFunction(scriptName, {
     if (data?.arg instanceof Discord.Message) return
     return sendError(message, {
       title: `Invalid argument type for \`${name.toTitleCase(true)}\``,
-      description: `\`${arg.toString().limit()}\` is not a valid \`${type.toTitleCase(true)}\``,
+      description: `\`${limit(arg.toString())}\` is not a valid \`${type.toTitleCase(true)}\``,
       processing: data?.processing
     })
   },

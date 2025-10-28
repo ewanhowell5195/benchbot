@@ -24,7 +24,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     const match = closestMatch(args[0], invites.map(e => e[0]))
     if (!match) return sendError(message, {
       title: "Server invite not found",
-      description: `The server invite \`${id.toTitleCase(true).limit()}\` was not found in this server`
+      description: `The server invite \`${limit(id.toTitleCase(true))}\` was not found in this server`
     })
     sendMessage(message, { content: invites.find(e => e[0] === match)[1] })
   }

@@ -76,7 +76,7 @@ registerPrefixCommand(scriptName, prefixPath, {
       })
     } catch(err) {
       sendError(message, {
-        description: `\`\`\`js\n${err.message.limit(4086)}\`\`\``
+        description: `\`\`\`js\n${limit(err.message, 4086)}\`\`\``
       })
     }
   }

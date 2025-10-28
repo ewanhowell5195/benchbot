@@ -24,7 +24,7 @@ registerPrefixCommand(scriptName, prefixPath, {
           const urlMatch = args[0].match(/discord\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})?(?:[^\d]|$)/)
           if (!urlMatch?.length) return sendError(message, {
             title: "Invalid member or message link",
-            description: `\`${args[0].limit()}\` is not a valid member or message link`
+            description: `\`${limit(args[0])}\` is not a valid member or message link`
           })
           if (message.channel.id !== urlMatch[2]) return sendError(message, {
             title: "Unable to relocate",

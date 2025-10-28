@@ -12,7 +12,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     const invite = db.guilds.serverInvites.getId(config.guild, id)
     if (!invite) return sendError(message, {
       title: "Server invite not found",
-      description: `The server invite \`${id.toTitleCase(true).limit()}\` was not found in this server`
+      description: `The server invite \`${limit(id.toTitleCase(true))}\` was not found in this server`
     })
     const invites = db.guilds.serverInvites.all(config.guild)
     db.guilds.serverInvites.remove(config.guild, invites.indexOf(invites.find(e => e[0] === id)))

@@ -6,7 +6,7 @@ registerArgType(scriptName, (item, data) => {
         if (data.errorless) return
         return sendError(data.message, {
           title: "Unsupported number",
-          description: `\`${item.limit()}\` is an unsupported number\n\nNumbers must be between \`${Number.MIN_SAFE_INTEGER}\` and \`${Number.MAX_SAFE_INTEGER}\``,
+          description: `\`${limit(item)}\` is an unsupported number\n\nNumbers must be between \`${Number.MIN_SAFE_INTEGER}\` and \`${Number.MAX_SAFE_INTEGER}\``,
           processing: data.processing,
           fetch: true
         })
@@ -14,7 +14,7 @@ registerArgType(scriptName, (item, data) => {
       else if (data.interaction) {
         if (!data.errorless) sendPrivateError(data.interaction, {
           title: "Unsupported number",
-          description: `\`${item.limit()}\` is an unsupported number\n\nNumbers must be between \`${Number.MIN_SAFE_INTEGER}\` and \`${Number.MAX_SAFE_INTEGER}\``,
+          description: `\`${limit(item)}\` is an unsupported number\n\nNumbers must be between \`${Number.MIN_SAFE_INTEGER}\` and \`${Number.MAX_SAFE_INTEGER}\``,
           fetch: true
         })
         return false

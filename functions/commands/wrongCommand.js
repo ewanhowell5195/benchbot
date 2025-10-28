@@ -4,7 +4,7 @@ registerFunction(scriptName, (command, message, data) => new Promise(async (fulf
   const closest = closestMatch(command, commandList, 0)
   const error = await sendError(message, {
     title: "Incorrect command",
-    description: `The command \`${command.limit()}\` doesn't exist.\n\nDid you mean \`${closest}\`?`,
+    description: `The command \`${limit(command)}\` doesn't exist.\n\nDid you mean \`${closest}\`?`,
     components: [makeRow({
       buttons: [
         {

@@ -39,7 +39,7 @@ registerPrefixCommand(scriptName, prefixPath, {
             id: "rule",
             label: "Rule",
             maxLength: 128,
-            placeholder: rule[0].limit(64),
+            placeholder: limit(rule[0], 64),
             required: true
           }
         },
@@ -48,7 +48,7 @@ registerPrefixCommand(scriptName, prefixPath, {
             id: "description",
             label: "Rule Description",
             maxLength: 512,
-            placeholder: rule[1].limit(64),
+            placeholder: limit(rule[1], 64),
             long: true
           }
         }

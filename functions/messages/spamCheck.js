@@ -12,7 +12,7 @@ registerFunction(scriptName, message => {
     args.fields = [
       ["Member", message.member ? `${message.member} \`${message.member.id}\`` : "Unknown member"],
       ["Channel", message.channel.toString()],
-      ["Message content", `\`\`\`${content.limit(1018).replace(/`/g, "'")}\`\`\``]
+      ["Message content", `\`\`\`${limit(content, 1018).replace(/`/g, "'")}\`\`\``]
     ]
     args.footer = [`The message has been deleted${message.member ? ` and the member has been kicked` : ""}`]
     sendLog(args)

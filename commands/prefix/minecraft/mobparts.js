@@ -98,7 +98,7 @@ registerPrefixCommand(scriptName, prefixPath, {
       } else {
         const closest = closestMatch(entity, supportedEntities.concat(legacyEntities, unsupportedEntities, unreleasedEntities), 0)
         const suggestion = await confirm(message, {
-          title: `The entity ${entity.limit().quote()} was not found`,
+          title: `The entity ${limit(entity).quote()} was not found`,
           description: `Did you mean ${closest.quote()}?`,
           author: ["Error", client.icons.error],
           text: "Yes",

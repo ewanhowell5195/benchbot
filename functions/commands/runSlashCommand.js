@@ -64,7 +64,7 @@ registerFunction(scriptName, async interaction => {
         if (input instanceof Discord.Message || input === false) return
         else if (input === undefined) return sendError(interaction, {
           title: `Invalid argument type for \`${name}\``,
-          description: `\`${argument.limit()}\` is not a valid \`${arg.argType.toTitleCase(true)}\``
+          description: `\`${limit(argument)}\` is not a valid \`${arg.argType.toTitleCase(true)}\``
         })
       }
     } else if (arg.default) input = arg.default

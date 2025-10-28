@@ -1,7 +1,6 @@
 registerLoadIn(scriptName, {
   load() {
     String.prototype.toTitleCase = toTitleCase
-    String.prototype.limit = limit
     String.prototype.quote = function(c, lang = "") {
       if (c) return `\`\`\`${lang}
 ${this.replaceAll("`", "´")}\`\`\``
@@ -15,7 +14,6 @@ ${this.toLocaleString()}\`\`\``
   },
   unload() {
     delete String.prototype.toTitleCase
-    delete String.prototype.limit
     delete String.prototype.quote
     delete Number.prototype.quote
   }

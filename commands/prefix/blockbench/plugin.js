@@ -18,7 +18,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     const closest = closestMatch(args[0], pluginList)
     if (!closest) return sendError(message, {
       title: "Unknown plugin",
-      description: `The plugin \`${args[0].limit()}\` was not found.\n\n**Available Blockbench Plugins**\n\n${quoteList(Object.values(plugins).map(e => e.title).sort())}`,
+      description: `The plugin \`${limit(args[0])}\` was not found.\n\n**Available Blockbench Plugins**\n\n${quoteList(Object.values(plugins).map(e => e.title).sort())}`,
       processing
     })
     const plugin = Object.entries(plugins).find(e => e[0] === closest || e[1].title === closest)

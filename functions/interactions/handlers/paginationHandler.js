@@ -97,7 +97,7 @@ registerFunction(scriptName, async (message, embeds, args) => {
       if (!passed) {
         return sendPrivateError(interaction, {
           title: "Page not found",
-          description: `Page ${input.limit().quote()} was not found`
+          description: `Page ${limit(input).quote()} was not found`
         })
       }
     }
