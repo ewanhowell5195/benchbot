@@ -60,7 +60,7 @@ registerPrefixCommand(scriptName, prefixPath, {
               emoji: client.emotes.arrowRightWhite,
               customId: "skip"
             } : undefined
-          ].filter(e => e)
+          ].filter(Boolean)
         })],
         fetch: true,
         processing

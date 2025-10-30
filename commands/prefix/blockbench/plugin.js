@@ -73,7 +73,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     sendMessage(message, {
       title: plugin[1].title,
       description: plugin[1].description,
-      fields: fields.filter(e => e),
+      fields: fields.filter(Boolean),
       thumbnail: plugin[1].icon.endsWith(".png") ? `https://cdn.jsdelivr.net/gh/JannisX11/blockbench-plugins/plugins/${plugin[0]}/${plugin[1].icon}` : undefined,
       footer: [`By ${plugin[1].author}${plugin[1].creation_date ? " - Released" : ""}`],
       timestamp: Date.parse(plugin[1].creation_date),
@@ -87,7 +87,7 @@ registerPrefixCommand(scriptName, prefixPath, {
             label: "Install in web app",
             url: `https://web.blockbench.net/?plugins=${plugin[0]}`
           }
-        ].filter(e => e)
+        ].filter(Boolean)
       })],
       processing
     })

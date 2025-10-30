@@ -21,7 +21,7 @@ registerFunction(scriptName, async (message, author, channel) => {
       ["Member", `${author} \`${author.id}\``],
       author.id === message.author?.id ? null : ["Target Member", `${message.author ?? message.user} \`${message.author?.id ?? message.user.id}\``],
       ["Channel", channel.toString()]
-    ].filter(e => e),
+    ].filter(Boolean),
     components: [makeRow({
       buttons: [{
         label: "Jump to message…",

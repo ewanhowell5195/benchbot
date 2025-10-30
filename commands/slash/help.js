@@ -5,7 +5,7 @@ registerSlashCommand(scriptName, slashPath, {
     description: "The category or command",
     autocomplete: (interaction, text) => {
       const commands = Array.from(client.prefixCommands).filter(e => e[0] === e[1].name && !e[1].parents.includes("restricted"))
-      if (text) return interaction.respond(filteredSort(commands.map(e => [e[0], e[1].aliases]).flat().flat().filter(e => e), text, 25).map(e => ({ name: e, value: e })))
+      if (text) return interaction.respond(filteredSort(commands.map(e => [e[0], e[1].aliases]).flat().flat().filter(Boolean), text, 25).map(e => ({ name: e, value: e })))
       interaction.respond(commands.map(e => e[0]).sort().slice(0, 25).map(e => ({ name: e, value: e })))
     }
   }]

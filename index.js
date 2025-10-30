@@ -173,7 +173,7 @@ async function loadScript(filePath) {
     const __filename = "${key}"
     const scriptName = "${path.basename(key, ".js")}"
     const prefixPath = "${path.relative("./commands/prefix", path.dirname(key)).replace(/\\/g, "\\\\")}".split(/\\\\|\\\//)
-    const slashPath = "${path.relative("./commands/slash", path.dirname(key)).replace(/\\/g, "\\\\")}".split(/\\\\|\\\//).filter(e => e)
+    const slashPath = "${path.relative("./commands/slash", path.dirname(key)).replace(/\\/g, "\\\\")}".split(/\\\\|\\\//).filter(Boolean)
     return (async () => {
       ${await fs.promises.readFile(key, "utf-8")}
     })()
