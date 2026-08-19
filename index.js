@@ -225,6 +225,7 @@ async function loadAll() {
   client.prefixCategories = new Set
   client.prefixCommands = new Discord.Collection()
   client.slashCommands = new Discord.Collection()
+  client.slashCommands.data = {}
   client.contextCommands = new Discord.Collection()
   client.autocompletes = new Discord.Collection()
   vmContextObject.loadedFunctions = new Set

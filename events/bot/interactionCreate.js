@@ -42,7 +42,7 @@ registerEvent(scriptName, async interaction => {
         }
       }
     }
-    const autocomplete = command.options?.find(e => (e.name ?? e.type) === name)?.autocomplete
+    const autocomplete = command.arguments?.find(e => e.id === name)?.autocomplete
     if (!autocomplete) return interaction.respond([])
     if (typeof autocomplete === "function") autocomplete(interaction, interaction.options.getFocused().toLowerCase(), interaction.options)
     else if (Array.isArray(autocomplete)) interaction.respond(filteredSort(autocomplete, interaction.options.getFocused().toLowerCase(), 25).map(e => ({ name: e, value: e })))
