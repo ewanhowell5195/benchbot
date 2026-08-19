@@ -1,4 +1,5 @@
 registerFunction(scriptName, {
+  plural: count => count === 1 ? "" : "s",
   durationString(num) {
     if (!num) return num
     const years = Math.floor(num / 3.1536e10)

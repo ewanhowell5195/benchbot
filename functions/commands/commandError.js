@@ -15,7 +15,7 @@ registerFunction(scriptName, async (message, error) => {
       await sendMessage(await getChannel(config.channels.errors), {
         title,
         fields: [
-          ["Command", `\`\`${client.prefix}${message.command.name}\`\``, false],
+          ["Command", `\`\`${config.prefix}${message.command.name}\`\``, false],
           [`Message sent by \`${message.author.username}\``, limit(message.content, 1024)],
           ["Error message", `\`\`${limit(error.message, 1000)}\`\``, false],
           ["Stack", `\`\`\`${limit(error.stack.toString(), 1000)}\`\`\``, false]

@@ -34,7 +34,7 @@ registerFunction(scriptName, (command, message, data) => new Promise(async (fulf
   const author = message.author || message.user
   await interactionHandler(message.commandName ? message : error, async (interaction, collector) => {
     if (interaction.customId === "info") {
-      return client.prefixCommands.get("help").execute(message, [client.prefixCommands.get(closest)], interaction)
+      return client.prefixCommands.get("help").execute(message, client.prefixCommands.get(closest), interaction)
     }
     if (interaction.user.id === author.id) {
       if (interaction.customId === "run") {
