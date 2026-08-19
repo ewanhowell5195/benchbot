@@ -36,7 +36,7 @@ registerPrefixCommand(scriptName, prefixPath, {
       title: "Unknown FAQ",
       description: `The FAQ \`${limit(args[0])}\` was not found\n\nUse the command \`${getCommandName(message)}\` to view a list of all FAQs`
     })
-    const faq = faqs.find(e => e[0] === match || e[1].id === match || e[1].data.aliases?.includes(match))
+    const faq = faqs.find(e => e[0] === match || e[1].id === match || e[1].data.aliases?.some(a => a === match || `${e[1].category}-${a}` === match))
     sendMessage(message, makeFAQ(faq[1]))
   }
 })
