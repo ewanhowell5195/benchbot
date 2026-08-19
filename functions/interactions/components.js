@@ -24,6 +24,7 @@ registerFunction(scriptName, {
           case item instanceof Discord.ButtonBuilder:
           case item instanceof Discord.StringSelectMenuBuilder:
           case item instanceof Discord.ChannelSelectMenuBuilder:
+          case item instanceof Discord.RoleSelectMenuBuilder:
             container.addActionRowComponents(row => row.addComponents(item))
             break
           case item instanceof Discord.ActionRowBuilder:
@@ -102,6 +103,9 @@ registerFunction(scriptName, {
         select = new Discord.ChannelSelectMenuBuilder()
         if (args.types) select.addChannelTypes(...args.types.map(e => getType.channel(e)))
         else select.addChannelTypes(getType.channel("GuildText"))
+        if (args.defaults?.length) select.setDefaultChannels(...args.defaults)
+      } else if (args.type === "role") {
+        select = new Discord.RoleSelectMenuBuilder()
       } else {
         select = new Discord.StringSelectMenuBuilder()
         const options = []
@@ -120,7 +124,42 @@ registerFunction(scriptName, {
       if (args.placeholder) select.setPlaceholder(args.placeholder)
       if (defined(args.minValues)) select.setMinValues(args.minValues)
       if (args.maxValues) select.setMaxValues(args.maxValues)
+      if (!args.required) select.setRequired(false)
       return select
+    },
+    input(args) {
+      const text = new Discord.TextInputBuilder().setCustomId(args.id)
+      if (args.value) text.setValue(args.value)
+      if (!args.required) text.setRequired(false)
+      if (args.placeholder) text.setPlaceholder(args.placeholder)
+      if (args.long) text.setStyle(Discord.TextInputStyle.Paragraph)
+      else text.setStyle(Discord.TextInputStyle.Short)
+      if (args.maxLength || args.length) text.setMaxLength(args.maxLength ?? args.length)
+      if (args.minLength || args.length) text.setMinLength(args.minLength ?? args.length)
+      return text
+    },
+    checkbox(args = {}) {
+      const checkbox = new Discord.CheckboxBuilder().setCustomId(args.id ?? Math.random().toString())
+      if (args.default) checkbox.setDefault(true)
+      return checkbox
+    },
+    radioGroup(args) {
+      const radios = new Discord.RadioGroupBuilder().setCustomId(args.id ?? Math.random().toString())
+      radios.addOptions(args.options.map((o, i) => {
+        const option = new Discord.RadioGroupOptionBuilder()
+        if (typeof o === "string") {
+          option.setLabel(o)
+          option.setValue(o.toLowerCase())
+        } else {
+          option.setLabel(o.label)
+          option.setValue(o.value ?? i.toString())
+          if (o.description) option.setDescription(o.description)
+          if (o.default) option.setDefault(true)
+        }
+        return option
+      }))
+      if (!args.required) radios.setRequired(false)
+      return radios
     },
     thumbnail(url, args) {
       const thumbnail = new Discord.ThumbnailBuilder().setURL(url.startsWith("http") ? url : `attachment://${url}`)
@@ -172,6 +211,33 @@ registerFunction(scriptName, {
       }
       return modal
     },
+    label(args) {
+      const label = new Discord.LabelBuilder().setLabel(args.label)
+      if (args.description) {
+        label.setDescription(args.description)
+      }
+      switch (true) {
+        case args.component instanceof Discord.TextInputBuilder:
+          label.setTextInputComponent(args.component)
+          break
+        case args.component instanceof Discord.StringSelectMenuBuilder:
+          label.setStringSelectMenuComponent(args.component)
+          break
+        case args.component instanceof Discord.ChannelSelectMenuBuilder:
+          label.setChannelSelectMenuComponent(args.component)
+          break
+        case args.component instanceof Discord.RoleSelectMenuBuilder:
+          label.setRoleSelectMenuComponent(args.component)
+          break
+        case args.component instanceof Discord.CheckboxBuilder:
+          label.setCheckboxComponent(args.component)
+          break
+        case args.component instanceof Discord.RadioGroupBuilder:
+          label.setRadioGroupComponent(args.component)
+          break
+      }
+      return label
+    },
     textInput(args) {
       const label = new Discord.LabelBuilder().setLabel(args.label)
       if (args.description) {
@@ -185,8 +251,10 @@ registerFunction(scriptName, {
       else text.setStyle(Discord.TextInputStyle.Short)
       if (args.type === "url") text.setMaxLength(256)
       else if (args.type === "number") text.setMaxLength(8)
+      else if (args.type === "duration") text.setMaxLength(8)
       else if (args.type === "colour" || args.type === "emoji") text.setMaxLength(32)
       else if (args.type === "boolean" || args.type === "buttonColour") text.setMaxLength(5)
+      else if (args.type === "role") text.setMaxLength(100)
       else if (args.maxLength || args.length) text.setMaxLength(args.maxLength ?? args.length)
       if (args.minLength || args.length) text.setMinLength(args.minLength ?? args.length)
       return label.setTextInputComponent(text)
