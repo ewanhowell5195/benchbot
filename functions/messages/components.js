@@ -68,5 +68,9 @@ registerFunction(scriptName, {
   async editComponents(message, args) {
     args = await setup(message, args)
     return editMessage(message, args)
+  },
+  async editPrivateComponents(message, args) {
+    args = await setup(message, args)
+    return editPrivateMessage(message, args)
   }
 })
