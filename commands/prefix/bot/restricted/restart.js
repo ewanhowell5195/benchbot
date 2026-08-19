@@ -1,7 +1,5 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Restart the bot."
-  },
+  description: "Restart the bot.",
   permissions: ["BotOwner"],
   async execute(message, args) {
     const msg = await sendMessage(message, {

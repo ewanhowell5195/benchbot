@@ -1,26 +1,29 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Edit one of the server rules.",
-    arguments: "[rule]"
-  },
+  description: "Edit one of the server rules.",
   guildOnly: true,
   aliases: ["ruleedit"],
   permissions: ["ManageGuild"],
-  arguments: ["rule:number"],
-  async execute(message, args) {
-    if (args[0] < 1) return sendError(message, {
+  arguments: [{
+    type: "number",
+    name: "rule",
+    description: "The rule number",
+    required: true,
+    autocomplete: "rules"
+  }],
+  async execute(message, ruleNumber) {
+    if (ruleNumber < 1) return sendError(message, {
       title: "Invalid rule",
       description: "The minimum rule number is `1`"
     })
-    const rule = db.guilds.rules.get(message.guildId, args[0] - 1)
+    const rule = db.guilds.rules.get(message.guildId, ruleNumber - 1)
     if (!rule) return sendError(message, {
       title: "Rule not found",
-      description: `Rule \`${args[0]}\` was not found`
+      description: `Rule \`${ruleNumber}\` was not found`
     })
     const newRule = []
     const modal = await modalHandler(message, undefined, {
       prompt: {
-        description: `Press the button to edit the rule:\n## Rule ${args[0]}: ${rule[0]}\n${rule[1]}`,
+        description: `Press the button to edit the rule:\n## Rule ${ruleNumber}: ${rule[0]}\n${rule[1]}`,
         button: {
           label: "Edit rule",
           emoji: client.emotes.pencilWhite,
@@ -58,11 +61,11 @@ registerPrefixCommand(scriptName, prefixPath, {
     })
     if (modal.timeout) return
     const target = modal.interaction ?? message
-    db.guilds.rules.edit(message.guildId, args[0] - 1, newRule)
+    db.guilds.rules.edit(message.guildId, ruleNumber - 1, newRule)
     sendComponents(target, {
       components: [
-        component.container(message, [`## Rule updated\nRule \`${args[0]}\` has been updated\n\nHere is a preview of the rule:`]),
-        component.container(message, [`## Rule ${args[0]}: ${newRule[0]}${newRule[1] ? `\n${newRule[1]}` : ""}`])
+        component.container(message, [`## Rule updated\nRule \`${ruleNumber}\` has been updated\n\nHere is a preview of the rule:`]),
+        component.container(message, [`## Rule ${ruleNumber}: ${newRule[0]}${newRule[1] ? `\n${newRule[1]}` : ""}`])
       ]
     }, modal.message)
   }

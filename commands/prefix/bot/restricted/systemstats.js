@@ -43,9 +43,7 @@ const getStorage = async () => {
 }
 
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "View the stats about the system the bot is running on."
-  },
+  description: "View the stats about the system the bot is running on.",
   aliases: ["systemspecs", "specs"],
   permissions: ["BotOwner"],
   async execute(message, args) {

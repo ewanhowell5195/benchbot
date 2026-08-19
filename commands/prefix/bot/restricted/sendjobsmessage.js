@@ -1,7 +1,5 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Send the job channels overview message."
-  },
+  description: "Send the job channels overview message.",
   permissions: ["BotOwner"],
   async execute(message) {
     sendMessage(message.channel, {

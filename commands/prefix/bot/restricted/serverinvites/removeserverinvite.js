@@ -1,14 +1,16 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Remove a server invite.",
-    arguments: "[name]"
-  },
+  description: "Remove a server invite.",
   guildOnly: true,
   aliases: ["removeserver", "removeinvite"],
   permissions: ["ManageGuild"],
-  arguments: ["*name"],
-  async execute(message, args) {
-    const id = args[0].toLowerCase().replace(/\s/g, "-")
+  arguments: [{
+    name: "name",
+    description: "The server name",
+    required: true,
+    autocomplete: "serverInvites"
+  }],
+  async execute(message, name) {
+    const id = name.toLowerCase().replace(/\s/g, "-")
     const invite = db.guilds.serverInvites.getId(config.guild, id)
     if (!invite) return sendError(message, {
       title: "Server invite not found",

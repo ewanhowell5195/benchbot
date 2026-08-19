@@ -1,7 +1,5 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Creates a new job post."
-  },
+  description: "Creates a new job post.",
   aliases: ["newjob", "jobnew"],
   async execute(message) {
     let member = message.member

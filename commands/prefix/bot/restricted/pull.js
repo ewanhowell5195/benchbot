@@ -1,7 +1,5 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Pull the latest changes from GitHub."
-  },
+  description: "Pull the latest changes from GitHub.",
   permissions: ["BotOwner"],
   async execute(message, args) {
     const p = spawn("git", ["pull"], { stdio: ["ignore", "pipe", "ignore"] })

@@ -1,22 +1,23 @@
 const types = ["png", "jpeg", "gif", "webp"]
 
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: [
-      "Submit a model to the archive!",
-      'Messages in #model-showcase can be prefixed with "[P]" instead of running this command.',
-      "This command requires a message attachment image.",
-      "To add a description in a prefix command, use a new line after the title."
-    ],
-    arguments: "[title]"
-  },
+  description: [
+    "Submit a model to the archive!",
+    'Messages in #model-showcase can be prefixed with "[P]" instead of running this command.',
+    "This command requires a message attachment image.",
+    "To add a description in a prefix command, use a new line after the title."
+  ],
   typingless: true,
   aliases: ["submit", "artchive", "pinmodel", "[p]"],
-  arguments: ["*title"],
-  async execute(message, args) {
-    args[0] = args[0].replace(/^\[p\]\s?/i, "")
-    if (!args[1]) {
-      [args[0], args[1]] = args[0].split(/(?<=^[^\n]*)\n/)
+  arguments: [{
+    name: "title",
+    description: "The model's title",
+    required: true
+  }],
+  async execute(message, title, description) {
+    title = title.replace(/^\[p\]\s?/i, "")
+    if (!description) {
+      [title, description] = title.split(/(?<=^[^\n]*)\n/)
     }
     const images = Array.from(message.attachments.filter(e => e.contentType?.startsWith("image/"))).slice(0, 4)
     if (!images.length) {
@@ -29,11 +30,11 @@ registerPrefixCommand(scriptName, prefixPath, {
         description: "Please provide at least one image"
       })
     }
-    if (args[0].length < 3) return sendError(message, {
+    if (title.length < 3) return sendError(message, {
       title: "Model title too short",
       description: "The mimimum title length is `3` characters. Please provide a longer title"
     })
-    if (args[0].length > 50) return sendError(message, {
+    if (title.length > 50) return sendError(message, {
       title: "Model title too long",
       description: "The maximum title length is `50` characters. Please provide a shorter title.\nThe first line of your post gets used as the title. You can add additional lines to write a description."
     })
@@ -67,9 +68,9 @@ registerPrefixCommand(scriptName, prefixPath, {
     }
     const url = !message.command.slash && message.guild ? `https://discord.com/channels/${message.guildId}/${message.channelId}/${message.id}` : message.command.slash ? "https://web.blockbench.net/" : images[0][1].url
     const embeds = [{
-      title: args[0],
+      title,
       url,
-      description: `${args[1] ? `${args[1]}\n\n` : ""}**By ${message.author}**`,
+      description: `${description ? `${description}\n\n` : ""}**By ${message.author}**`,
       image: images.shift()[1].url,
       thumbnail: avatar(message.member, 48)
     }]

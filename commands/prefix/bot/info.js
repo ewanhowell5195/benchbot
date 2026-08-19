@@ -1,7 +1,5 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Get some information about the bot."
-  },
+  description: "Get some information about the bot.",
   aliases: ["botinformation", "botinfo", "information", "binfo", "about"],
   async execute(message) {
     const creator = await client.users.fetch(config.owners[0])

@@ -1,17 +1,29 @@
 const pattern = /^https:\/\/discord\.com\/invite\/.*/
 
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Add a new server invite.",
-    arguments: "[name] [invite]"
-  },
+  description: "Add a new server invite.",
   guildOnly: true,
   aliases: ["addserver", "addinvite"],
   permissions: ["ManageGuild"],
-  arguments: ["name", "invite"],
-  async execute(message, args) {
-    const id = args.slice(0, -1).join("-").toLowerCase().replace(/\s/g, "").trim()
-    let invite = args.slice(-1)[0]
+  options: {
+    quotes: true
+  },
+  arguments: [
+    {
+      name: "name",
+      description: "The server name",
+      maxLength: 24,
+      required: true
+    },
+    {
+      name: "invite",
+      description: "The invite link",
+      required: true,
+      rest: false
+    }
+  ],
+  async execute(message, name, invite) {
+    const id = name.toLowerCase().replace(/\s+/g, "-").trim()
     if (!invite.match(/^https?:\/\/.*/)) invite = "https://" + invite
     const r = await argTypes.realURL(invite, { message })
     if (r instanceof Discord.Message) return
@@ -20,10 +32,6 @@ registerPrefixCommand(scriptName, prefixPath, {
     if (count >= 15) return sendError(message, {
       title: "Maximum number of server invites",
       description: "The maximum number of server invites that you can have is `15`"
-    })
-    if (args[0].length > 24) return sendError(message, {
-      title: "Server invite name too long",
-      description: "The maximum server invite name length is `24`"
     })
     const existing = db.guilds.serverInvites.getId(config.guild, id)
     if (existing) return sendError(message, {

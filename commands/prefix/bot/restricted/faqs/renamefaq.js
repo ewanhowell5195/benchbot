@@ -1,14 +1,39 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Rename an FAQ entry.",
-    arguments: "[oldCategory] [oldId] [newCategory] [newId]"
-  },
+  description: "Rename an FAQ entry.",
   guildOnly: true,
   permissions: ["ManageMessages"],
   aliases: ["faqrename"],
-  arguments: ["oldCategory", "oldId", "newCategory", "newId"],
-  async execute(message, args) {
-    args = args.map(e => e.toLowerCase().trim().replace(/_/g, "-"))
+  arguments: [
+    {
+      name: "oldCategory",
+      description: "The old FAQ category",
+      maxLength: 32,
+      required: true,
+      autocomplete: "faqCategories"
+    },
+    {
+      name: "oldId",
+      description: "The old FAQ ID",
+      maxLength: 32,
+      required: true,
+      autocomplete: "faqIds:old"
+    },
+    {
+      name: "newCategory",
+      description: "The new FAQ category",
+      maxLength: 32,
+      required: true,
+      autocomplete: "faqCategories"
+    },
+    {
+      name: "newId",
+      description: "The new FAQ ID",
+      maxLength: 32,
+      required: true
+    }
+  ],
+  async execute(message, ...args) {
+    args = args.slice(0, 4).map(e => e.toLowerCase().trim().replace(/_/g, "-"))
     if (args[0] === args[2] && args[1] === args[3]) {
       return sendError(message, {
         title: "Unable to rename FAQ",

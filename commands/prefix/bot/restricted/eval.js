@@ -17,16 +17,17 @@ class ConsoleOutput extends Duplex {
 }
 
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Evaluate some code and view the output.",
-    arguments: "[code]"
-  },
+  description: "Evaluate some code and view the output.",
   aliases: ["evaluate"],
-  arguments: ["*code"],
+  arguments: [{
+    name: "code",
+    description: "The code to evaluate",
+    required: true
+  }],
   permissions: ["BotOwner"],
-  async execute(message, args) {
-    const m = args[0].match(/(?<=```(?:js|javascript)?\n)[\s\S]*(?=```)/gm)
-    if (m) args[0] = m[0]
+  async execute(message, code) {
+    const m = code.match(/(?<=```(?:js|javascript)?\n)[\s\S]*(?=```)/gm)
+    if (m) code = m[0]
     const guild = message.guild
     const channel = message.channel
     const member = message.member
@@ -54,8 +55,8 @@ registerPrefixCommand(scriptName, prefixPath, {
           }
         }
       }
-      console3.log(await eval(`(async () => {try {return await (async () => {${args[0].includes("return") || args[0].includes("console.log") ? args[0] : "return " + args[0]}})()} catch(err) {return err}})()`))
-      if (args[0].includes("return") || !args[0].includes("console.log")) out += evalOut._read()
+      console3.log(await eval(`(async () => {try {return await (async () => {${code.includes("return") || code.includes("console.log") ? code : "return " + code}})()} catch(err) {return err}})()`))
+      if (code.includes("return") || !code.includes("console.log")) out += evalOut._read()
       for (const [type, token] of Object.entries(tokens)) {
         if (typeof token === "object") for (const [subType, subToken] of Object.entries(token)) out = out.replace(new RegExp(escapeStringRegexp(subToken), "g"), `${subType.toUpperCase()}_TOKEN_REDACTED`)
         else out = out.replace(new RegExp(escapeStringRegexp(token), "g"), `${type.toUpperCase()}_TOKEN_REDACTED`)

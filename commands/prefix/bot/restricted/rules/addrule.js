@@ -1,7 +1,5 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Add a new rule to the server rules."
-  },
+  description: "Add a new rule to the server rules.",
   guildOnly: true,
   aliases: ["ruleadd"],
   permissions: ["ManageGuild"],

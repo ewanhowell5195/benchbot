@@ -1,7 +1,5 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Check what the bot's latency is."
-  },
+  description: "Check what the bot's latency is.",
   aliases: ["pong"],
   async execute(message, args) {
     const before = Date.now()

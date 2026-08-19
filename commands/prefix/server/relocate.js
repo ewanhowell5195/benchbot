@@ -1,30 +1,38 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: [
-      "Tell someone to relocate to a help channel!",
-      "Reply to a message to target that message.",
-      "If a member is provided, you can provide a keyword to target a specific help channel."
-    ],
-    arguments: "[member/messageURL]"
-  },
+  description: [
+    "Tell someone to relocate to a help channel!",
+    "Reply to a message to target that message.",
+    "If a member is provided, you can provide a keyword to target a specific help channel."
+  ],
   guildOnly: true,
   aliases: ["wrongchannel"],
-  arguments: ["?member/messageURL", "*?keywords"],
-  async execute(message, args) {
+  arguments: [
+    {
+      name: "memberOrMessageURL",
+      description: "The member or message URL to relocate"
+    },
+    {
+      name: "keywords",
+      description: "A keyword to target a specific help channel",
+      rest: true,
+      hidden: true
+    }
+  ],
+  async execute(message, target, keywords) {
     const oldMessage = message
     let member
-    if (!args[0] && !message.reference) {
+    if (!target && !message.reference) {
       message.content = ""
     } else {
-      if (args[0]) {
-        member = await argTypes.member(args[0], { message, errorless: true })
+      if (target) {
+        member = await argTypes.member(target, { message, errorless: true })
         if (member) {
-          member.content = args[1]
+          member.content = keywords
         } else {
-          const urlMatch = args[0].match(/discord\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})?(?:[^\d]|$)/)
+          const urlMatch = target.match(/discord\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})?(?:[^\d]|$)/)
           if (!urlMatch?.length) return sendError(message, {
             title: "Invalid member or message link",
-            description: `\`${limit(args[0])}\` is not a valid member or message link`
+            description: `\`${limit(target)}\` is not a valid member or message link`
           })
           if (message.channel.id !== urlMatch[2]) return sendError(message, {
             title: "Unable to relocate",
@@ -75,11 +83,11 @@ registerPrefixCommand(scriptName, prefixPath, {
         })
       }
     }
-    if (oldMessage.command.application && (args[0] || oldMessage.reference)) sendMessage(oldMessage, {
+    if (oldMessage.command.application && (target || oldMessage.reference)) sendMessage(oldMessage, {
       ephemeral: true,
       description: "Message relocated..."
     })
-    if ((args[0] || oldMessage.reference) && !member) react(message, config.emotes.relocate)
+    if ((target || oldMessage.reference) && !member) react(message, config.emotes.relocate)
     relocate(member ?? message, oldMessage.author, message.channel)
   }
 })

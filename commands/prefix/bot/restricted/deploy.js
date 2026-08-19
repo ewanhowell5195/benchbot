@@ -1,39 +1,45 @@
+const { SlashCommandBuilder, SlashCommandSubcommandGroupBuilder, ContextMenuCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders")
+
 function setupOption(option, data, args) {
-  option.setName(args?.name ?? data.name ?? data.type).setDescription(args?.description ?? data.description).setRequired(data.required ? data.required : false).setAutocomplete?.(!!data.autocomplete)
-  if (data.choices) option.setChoices(...data.choices.map(e => ({ name: e, value: e.toLowerCase() })))
-  if (defined(data.min)) option.setMinValue(data.min)
-  if (defined(data.max)) option.setMaxValue(data.max)
-  if (defined(data.minLength)) option.setMinLength(data.minLength)
-  if (defined(data.maxLength)) option.setMaxLength(data.maxLength)
+  const description = args?.description ?? data.description
+  if (!description) throw Error(`Missing description for option \`${data.name}\``)
+  option.setName(args?.name ?? data.id).setDescription(description).setRequired(data.required ? data.required : false).setAutocomplete?.(!!data.autocomplete || typeof data.options === "function")
+  if (!data.autocomplete) {
+    if (data.choices) option.setChoices(...data.choices.map(e => ({ name: e, value: e.toLowerCase() })))
+    else if (Array.isArray(data.options)) option.setChoices(...data.options.map(e => ({ name: e, value: e.toLowerCase() })))
+  }
+  if (data.type === "integer" || data.type === "number") {
+    if (defined(data.min)) option.setMinValue(data.min)
+    if (defined(data.max)) option.setMaxValue(data.max)
+  } else if (!data.type) {
+    if (data.minLength) option.setMinLength(data.minLength)
+    if (data.maxLength) option.setMaxLength(data.maxLength)
+  }
   return option
 }
 
 function makeCommand(command, options) {
-  if (!options.description) options.description = Array.isArray(options.prefixCommand.help.description) ? options.prefixCommand.help.description[0] : options.prefixCommand.help.description
-  if (options.description.length > 100) throw Error(`Slash command description too long for \`${options.name}\``)
-  command.setName(options.name).setDescription(options.description)
+  const description = Array.isArray(options.description) ? options.description[0] : options.description
+  if (description.length > 100) throw Error(`Slash command \`${options.name}\` description too long`)
+  command.setName(options.name).setDescription(description.replace(/\.$/, ""))
   if (options.permissions.length && command.setDefaultMemberPermissions) {
     command.setDefaultMemberPermissions(options.permissions.map?.(e => getType.permission(e))?.reduce?.((a, e) => a | e, 0n))
   }
   if (options.guildOnly) command.setDMPermission?.(false)
-  if (options.options) for (const option of options.options) {
-    if (option.type === "user" || option.type === "member") command.addUserOption(e => setupOption(e, option))
-    else if (option.type === "string" || !option.type) command.addStringOption(e => setupOption(e, option))
-    else if (option.type === "number") command.addNumberOption(e => setupOption(e, option))
-    else if (option.type === "integer") command.addIntegerOption(e => setupOption(e, option))
-    else if (option.type === "boolean") command.addBooleanOption(e => setupOption(e, option))
-    else if (option.type === "channel") command.addChannelOption(e => setupOption(e, option))
-    else if (option.type === "role") command.addRoleOption(e => setupOption(e, option))
-    else if (option.type === "attachment") command.addAttachmentOption(e => setupOption(e, option))
-    else if (option.type === "image") {
-      command.addAttachmentOption(e => setupOption(e, option, {
-        name: `${option.name ?? option.type}-attachment`,
-        description: option.description ?? "An image"
-      }))
-      if (!option.attachmentOnly) command.addStringOption(e => setupOption(e, option, {
-        name: `${option.name ?? option.type}-string`,
-        description: option.description ?? "An image"
-      }))
+  if (options.arguments) {
+    for (const option of options.arguments) {
+      try {
+        if (option.type === "user" || option.type === "member") command.addUserOption(e => setupOption(e, option))
+        else if (option.type === "number") command.addNumberOption(e => setupOption(e, option))
+        else if (option.type === "integer") command.addIntegerOption(e => setupOption(e, option))
+        else if (option.type === "boolean") command.addBooleanOption(e => setupOption(e, option))
+        else if (option.type === "channel") command.addChannelOption(e => setupOption(e, option))
+        else if (option.type === "role") command.addRoleOption(e => setupOption(e, option))
+        else if (option.type === "attachment") command.addAttachmentOption(e => setupOption(e, option))
+        else command.addStringOption(e => setupOption(e, option))
+      } catch (err) {
+        throw Error(`Slash command \`${options.name}\` ${err.message}`)
+      }
     }
   }
   return command
@@ -48,7 +54,7 @@ async function loadCommands(parent, category, command) {
       subCommands.push(subCommand)
     } else if (!file.endsWith(".json")) {
       const options = JSON.parse(fs.readFileSync(`./commands/slash/${category.join("/")}/${file}/command.json`, "utf8"))
-      const group = new Discord.SlashCommandSubcommandGroupBuilder().setName(file).setDescription(options.description)
+      const group = new SlashCommandSubcommandGroupBuilder().setName(file).setDescription(options.description)
       await loadCommands(collection, [...category, file], group)
       command.addSubcommandGroup(g => group.setName(file).setDescription(options.description))
     }
@@ -57,11 +63,14 @@ async function loadCommands(parent, category, command) {
 }
 
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Deploy the application commands."
-  },
+  description: "Deploy the application commands.",
   permissions: ["BotOwner"],
-  async execute(message) {
+  arguments: [{
+    name: "type",
+    description: "The deploy type",
+    options: ["global", "guild"]
+  }],
+  async execute(message, deployType) {
     const processing = await sendProcessing(message)
     try {
       const commands = []
@@ -69,10 +78,10 @@ registerPrefixCommand(scriptName, prefixPath, {
       for (const file of fs.readdirSync("./commands/slash")) {
         if (file.endsWith(".js")) {
           const command = client.slashCommands.get(file.slice(0, -3))
-          commands.push(makeCommand(new Discord.SlashCommandBuilder(), command))
+          commands.push(makeCommand(new SlashCommandBuilder(), command))
         } else {
           const options = JSON.parse(fs.readFileSync(`./commands/slash/${file}/command.json`, "utf8"))
-          const command = new Discord.SlashCommandBuilder().setName(file).setDescription(options.description)
+          const command = new SlashCommandBuilder().setName(file).setDescription(options.description)
           if (options.permissions) command.setDefaultMemberPermissions(options.permissions.map?.(e => getType.permission(e))?.reduce?.((a, e) => a | e, 0n))
           if (options.guildOnly) command.setDMPermission(false)
           await loadCommands(client.slashCommands, [file], command)
@@ -82,21 +91,21 @@ registerPrefixCommand(scriptName, prefixPath, {
 
       for (const file of fs.readdirSync("./commands/context")) {
         const options = client.contextCommands.find(e => e.command === file.slice(0, -3))
-        const command = new Discord.ContextMenuCommandBuilder().setName(options.name).setType(Discord.ApplicationCommandType[options.contextType ?? "Message"])
+        const command = new ContextMenuCommandBuilder().setName(options.name).setType(Discord.ApplicationCommandType[options.contextType ?? "Message"])
         if (options.permissions.length) command.setDefaultMemberPermissions(options.permissions.map?.(e => getType.permission(e))?.reduce?.((a, e) => a | e, 0n))
         if (options.guildOnly) command.setDMPermission(false)
         commands.push(command)
       }
 
       for (const command of commands) {
-        if (command instanceof Discord.SlashCommandBuilder) {
+        if (command instanceof SlashCommandBuilder) {
           let size = 0
           function calculate(command) {
             size += command.name.length
             size += command.description.length
             if (command.options) {
               for (const option of command.options) {
-                if (option instanceof Discord.SlashCommandSubcommandBuilder || option instanceof Discord.SlashCommandSubcommandGroupBuilder) {
+                if (option instanceof SlashCommandSubcommandBuilder || option instanceof SlashCommandSubcommandGroupBuilder) {
                   calculate(option)
                 } else {
                   size += option.name.length
@@ -118,14 +127,18 @@ registerPrefixCommand(scriptName, prefixPath, {
 
       const rest = new Discord.REST({ version: "10" }).setToken(tokens.discord)
 
-      if (testMode) await rest.put(Discord.Routes.applicationGuildCommands(client.user.id, message.guildId), { body: commands })
-      else await rest.put(Discord.Routes.applicationCommands(client.user.id), { body: commands })
+      deployType ??= testMode ? "guild" : "global"
+
+      if (deployType === "guild") {
+        await rest.put(Discord.Routes.applicationGuildCommands(client.user.id, message.guildId), { body: commands })
+      } else {
+        await rest.put(Discord.Routes.applicationCommands(client.user.id), { body: commands })
+      }
 
       sendMessage(message, {
-        description: "Successfully registered application commands.",
+        description: `Successfully registered \`${commands.length}\` application commands ${deployType === "guild" ? "to the server" : "globally"}`,
         processing
       })
-
     } catch (err) {
       console.error(err)
       sendError(message, {

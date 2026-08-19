@@ -23,14 +23,26 @@ function displayName(entity) {
 }
 
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Get a list of bone names for each entity supported by OptiFine CEM",
-    arguments: "[entity]"
-  },
+  description: "Get a list of bone names for each entity supported by OptiFine CEM",
   aliases: ["cemparts", "mob", "cem", "customentitymodel"],
-  arguments: ["?*entity"],
-  async execute(message, args) {
-    let entity = args[0]
+  arguments: [{
+    name: "entity",
+    description: "The entity",
+    async autocomplete(interaction, text) {
+      const cem = await cache.cem()
+      const entities = getEntities(cem)
+      interaction.respond(entities.map(e => ({
+        id: e.id,
+        displayName: displayName(e)
+      })).filter(e => e.id.includes(text) || e.displayName.toLowerCase().includes(text)).sort((a, b) => {
+        if (a.displayName.startsWith(text) !== b.displayName.startsWith(text)) {
+          return a.displayName.startsWith(text) ? -1 : 1
+        }
+        return a.displayName.localeCompare(b.displayName)
+      }).slice(0, 25).map(e => ({ name: e.displayName, value: e.id })))
+    }
+  }],
+  async execute(message, entity) {
     const cem = await cache.cem()
     const allEntities = getEntities(cem)
 

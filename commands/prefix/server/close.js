@@ -1,7 +1,5 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "Close the current help post."
-  },
+  description: "Close the current help post.",
   typingless: true,
   guildOnly: true,
   aliases: ["closethread", "threadclose", "closepost", "closeforum", "postclose", "forumclose", "setarchived"],

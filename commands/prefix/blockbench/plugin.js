@@ -1,32 +1,36 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: "View and get details about Blockbench plugins.",
-    arguments: "[plugin]"
-  },
+  description: "View and get details about Blockbench plugins.",
   aliases: ["plugins"],
-  arguments: ["*?plugin"],
-  async execute(message, args) {
+  arguments: [{
+    name: "plugin",
+    description: "The plugin name",
+    async autocomplete(interaction, text) {
+      if (text) return interaction.respond(filteredSort(Object.values(await cache.plugins()).map(e => e.title), text, 25).map(e => ({ name: e, value: e })))
+      interaction.respond(Object.values(await cache.plugins()).sort((a, b) => b.stats - a.stats).slice(0, 25).map(e => ({ name: e.title, value: e.title })))
+    }
+  }],
+  async execute(message, plugin) {
     const processing = await sendProcessing(message)
     const plugins = await cache.plugins()
-    if (!args[0]) return sendMessage(message, {
+    if (!plugin) return sendMessage(message, {
       title: "Available Blockbench Plugins",
       description: `Use \`${getCommandName(message)} [plugin]\` to view the details about a specific plugin\n\n${quoteList(Object.values(plugins).map(e => e.title).sort())}`,
       deletable: true,
       processing
     })
     const pluginList = Object.values(plugins).map(e => e.title).concat(Object.keys(plugins))
-    const closest = closestMatch(args[0], pluginList)
+    const closest = closestMatch(plugin, pluginList)
     if (!closest) return sendError(message, {
       title: "Unknown plugin",
-      description: `The plugin \`${limit(args[0])}\` was not found.\n\n**Available Blockbench Plugins**\n\n${quoteList(Object.values(plugins).map(e => e.title).sort())}`,
+      description: `The plugin \`${limit(plugin)}\` was not found.\n\n**Available Blockbench Plugins**\n\n${quoteList(Object.values(plugins).map(e => e.title).sort())}`,
       processing
     })
-    const plugin = Object.entries(plugins).find(e => e[0] === closest || e[1].title === closest)
+    const entry = Object.entries(plugins).find(e => e[0] === closest || e[1].title === closest)
     const fields = [
-      plugin[1].tags ? ["Tags", `\`${plugin[1].tags.join("`, `")}\``]: undefined,
-      ["Downloads over the last 2 weeks", `\`${plugin[1].stats.toLocaleString()}\``]
+      entry[1].tags ? ["Tags", `\`${entry[1].tags.join("`, `")}\``]: undefined,
+      ["Downloads over the last 2 weeks", `\`${entry[1].stats.toLocaleString()}\``]
     ]
-    if (plugin[0] === "minecraft_title_generator") {
+    if (entry[0] === "minecraft_title_generator") {
       const stats = await cache.minecraftTitleGenerator()
       let length = 0
       const popular = stats[0].filter(e => e.id.includes(".")).map(e => {
@@ -62,7 +66,7 @@ registerPrefixCommand(scriptName, prefixPath, {
         ["Titles generated all time", `\`${stats[1].filter(e => !e.id.includes(".") || e.id.startsWith("tileable.")).reduce((a, e) => a + e.count, 0).toLocaleString()}\``],
         ["Popular textures all time", popularAll]
       )
-    } else if (plugin[0] === "cem_template_loader") {
+    } else if (entry[0] === "cem_template_loader") {
       const cem = await cache.cem()
       let length = 0
       fields.push(["Template model counts", cem.categories.map(e => {
@@ -71,21 +75,21 @@ registerPrefixCommand(scriptName, prefixPath, {
       }).map(e => `\`${e.name.padEnd(length)}\` - \`${e.entities.length}\``).join("\n")])
     }
     sendMessage(message, {
-      title: plugin[1].title,
-      description: plugin[1].description,
+      title: entry[1].title,
+      description: entry[1].description,
       fields: fields.filter(Boolean),
-      thumbnail: plugin[1].icon.endsWith(".png") ? `https://cdn.jsdelivr.net/gh/JannisX11/blockbench-plugins/plugins/${plugin[0]}/${plugin[1].icon}` : undefined,
-      footer: [`By ${plugin[1].author}${plugin[1].creation_date ? " - Released" : ""}`],
-      timestamp: Date.parse(plugin[1].creation_date),
+      thumbnail: entry[1].icon.endsWith(".png") ? `https://cdn.jsdelivr.net/gh/JannisX11/blockbench-plugins/plugins/${entry[0]}/${entry[1].icon}` : undefined,
+      footer: [`By ${entry[1].author}${entry[1].creation_date ? " - Released" : ""}`],
+      timestamp: Date.parse(entry[1].creation_date),
       components: [makeRow({
         buttons: [
           {
             label: "View Plugin",
-            url: `https://www.blockbench.net/plugins/${plugin[0]}`
+            url: `https://www.blockbench.net/plugins/${entry[0]}`
           },
-          plugin[1].variant === "desktop" ? undefined : {
+          entry[1].variant === "desktop" ? undefined : {
             label: "Install in web app",
-            url: `https://web.blockbench.net/?plugins=${plugin[0]}`
+            url: `https://web.blockbench.net/?plugins=${entry[0]}`
           }
         ].filter(Boolean)
       })],

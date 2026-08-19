@@ -1,16 +1,16 @@
 registerPrefixCommand(scriptName, prefixPath, {
-  help: {
-    description: [
-      "View an FAQ entry.",
-      "Run with no arguments to list all FAQs."
-    ],
-    arguments: "[category] [id]"
-  },
+  description: [
+    "View an FAQ entry.",
+    "Run with no arguments to list all FAQs."
+  ],
   aliases: ["faqs"],
-  arguments: ["?*id"],
-  async execute(message, args) {
+  arguments: [{
+    name: "id",
+    description: "The FAQ ID"
+  }],
+  async execute(message, id) {
     const faqList = db.faq.all()
-    if (!args[0]) {
+    if (!id) {
       const categories = {}
       for (const entry of faqList) {
         categories[entry.category] ??= []
@@ -31,10 +31,10 @@ registerPrefixCommand(scriptName, prefixPath, {
       e.data.aliases?.forEach(a => faqIds.push(a, `${e.category}-${a}`))
       return [id, e]
     })
-    const match = closestMatch(args[0], faqIds)
+    const match = closestMatch(id, faqIds)
     if (!match) return sendError(message, {
       title: "Unknown FAQ",
-      description: `The FAQ \`${limit(args[0])}\` was not found\n\nUse the command \`${getCommandName(message)}\` to view a list of all FAQs`
+      description: `The FAQ \`${limit(id)}\` was not found\n\nUse the command \`${getCommandName(message)}\` to view a list of all FAQs`
     })
     const faq = faqs.find(e => e[0] === match || e[1].id === match || e[1].data.aliases?.some(a => a === match || `${e[1].category}-${a}` === match))
     sendMessage(message, makeFAQ(faq[1]))
