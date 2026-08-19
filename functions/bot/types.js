@@ -9,7 +9,8 @@ registerFunction(scriptName, {
     interaction: (interaction, type) => (interaction?.type ?? interaction) === Discord.InteractionType[type],
     option: (option, type) => (option?.type ?? option) === Discord.ApplicationCommandOptionType[type],
     sticker: (sticker, type) => (sticker?.format ?? sticker) === Discord.StickerFormatType[type],
-    command: (command, type) => (command?.commandType ?? command) === Discord.ApplicationCommandType[type]
+    command: (command, type) => (command?.commandType ?? command) === Discord.ApplicationCommandType[type],
+    error: (err, type) => (err?.code ?? err) === Discord.RESTJSONErrorCodes[type]
   },
   getType: {
     channel: channel => Discord.ChannelType[channel?.type ?? channel],

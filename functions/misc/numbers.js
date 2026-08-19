@@ -1,5 +1,6 @@
 registerFunction(scriptName, {
   plural: count => count === 1 ? "" : "s",
+  randInt: max => Math.floor(Math.random() * (max + 1)),
   durationString(num) {
     if (!num) return num
     const years = Math.floor(num / 3.1536e10)
