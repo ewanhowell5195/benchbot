@@ -99,7 +99,7 @@ registerFunction(scriptName, {
   registerAutocomplete: (name, execute) => client.autocompletes.set(name, { name, execute }),
   registerEvent(name, event) {
     const func = (...args) => {
-      if (client.isReady()) event(...args)
+      if (client.isReady() && !reloading) event(...args)
     }
     loadedEvents.set(name, func)
     client.on(name, func)

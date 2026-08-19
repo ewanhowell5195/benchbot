@@ -145,6 +145,7 @@ const vmContextObject = Object.assign({
   BigInt64Array,
   require: createRequire(import.meta.url),
   argTypes: {},
+  reloading: false,
   toTitleCase: String.prototype.toTitleCase,
   loadedFunctions: new Set,
   loadedEvents: new Map,
@@ -167,6 +168,8 @@ const vmContext = vm.createContext(vmContextObject)
 
 //////////////////////////////////////////////////////////////////////////////////////
 
+const sourceCache = new Map()
+
 async function loadScript(filePath) {
   const key = path.resolve(filePath).replace(/\\/g, "/")
   await vm.runInContext(`(() => {
@@ -175,7 +178,7 @@ async function loadScript(filePath) {
     const prefixPath = "${path.relative("./commands/prefix", path.dirname(key)).replace(/\\/g, "\\\\")}".split(/\\\\|\\\//)
     const slashPath = "${path.relative("./commands/slash", path.dirname(key)).replace(/\\/g, "\\\\")}".split(/\\\\|\\\//).filter(Boolean)
     return (async () => {
-      ${await fs.promises.readFile(key, "utf-8")}
+      ${await (sourceCache.get(key) ?? fs.promises.readFile(key, "utf-8"))}
     })()
   })()`, vmContext, {
     filename: key,
@@ -186,13 +189,32 @@ async function loadScript(filePath) {
 //////////////////////////////////////////////////////////////////////////////////////
 
 async function reloadAll() {
+  vmContextObject.reloading = true
+  try {
+    await loadAll()
+  } finally {
+    vmContextObject.reloading = false
+  }
+}
+
+async function loadAll() {
+  sourceCache.clear()
+  for (const dir of ["./functions", "./loadins", "./argtypes", "./commands", "./autocompletes", "./events"]) {
+    for await (const f of getFiles(dir)) {
+      if (!f.endsWith(".js")) continue
+      const key = path.resolve(f).replace(/\\/g, "/")
+      const source = fs.promises.readFile(key, "utf-8")
+      source.catch(() => {})
+      sourceCache.set(key, source)
+    }
+  }
   vmContextObject.argTypes = {}
+  for (const [k, v] of vmContextObject.loadedEvents) client.off(k, v)
+  for (const [k, v] of vmContextObject.loadedLoadIns) await v.unload?.()
   for (const script of vmContextObject.loadedFunctions) {
     delete vmContextObject[script]
     delete globalThis[script]
   }
-  for (const [k, v] of vmContextObject.loadedEvents) client.off(k, v)
-  for (const [k, v] of vmContextObject.loadedLoadIns) await v.unload?.()
   client.restrictedCommands = []
   client.commandTree = {}
   client.categories = {}
@@ -214,7 +236,21 @@ async function reloadAll() {
   for await (const f of getFiles("./commands/prefix")) if (f.endsWith(".js")) await loadScript(f)
   for (const file of fs.readdirSync("./commands/slash/")) if (!file.endsWith(".js")) {
     const commandGroup = new Discord.Collection()
-    for (const subFile of fs.readdirSync(`./commands/slash/${file}`)) if (!subFile.endsWith(".js") && !subFile.endsWith(".json")) commandGroup.set(subFile, new Discord.Collection())
+    if (fs.existsSync(`./commands/slash/${file}/command.json`)) {
+      commandGroup.data = JSON.parse(fs.readFileSync(`./commands/slash/${file}/command.json`))
+    } else {
+      commandGroup.data = {}
+    }
+    for (const subFile of fs.readdirSync(`./commands/slash/${file}`)) if (!subFile.endsWith(".js") && !subFile.endsWith(".json")) {
+      const subCommandGroup = new Discord.Collection()
+      if (fs.existsSync(`./commands/slash/${file}/${subFile}/command.json`)) {
+        subCommandGroup.data = JSON.parse(fs.readFileSync(`./commands/slash/${file}/${subFile}/command.json`))
+      } else {
+        subCommandGroup.data = {}
+      }
+      subCommandGroup.data.installType ??= commandGroup.data.installType
+      commandGroup.set(subFile, subCommandGroup)
+    }
     client.slashCommands.set(file, commandGroup)
   }
   for await (const f of getFiles("./commands/slash")) if (f.endsWith(".js")) await loadScript(f)
@@ -225,11 +261,13 @@ async function reloadAll() {
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-process.on("unhandledRejection", async error => {
+const handleError = async error => {
+  if (!error || typeof error !== "object") error = new Error(String(error))
   if (testMode) {
     return console.error(error)
   }
   if (error.message === "Service Unavailable") return
+  if (typeof vmContextObject.sendMessage !== "function") return
   if (error.errors) {
     console.error(error)
   }
@@ -237,12 +275,12 @@ process.on("unhandledRejection", async error => {
     if (error instanceof Discord.DiscordAPIError) {
       if (error.message === "Unknown interaction") return
       await sendMessage(await getChannel(config.channels.errors), {
-        title: "An API error occured",
-        description: limit(`\`${error.message}\`\n\n**Status**\n\`${error.httpStatus}\`\n\n**Request**\n\`${error.method.toUpperCase()} ${error.path}\`\n\n**Data**\n\`\`\`${error.requestData?.json ? `${JSON.stringify(error.requestData.json)}\`\`\`\n` : ""}**Stack**\n\`\`\`${error.stack}`, 4093) + "```"
+        title: "An API error occurred",
+        description: limit(`\`${error.message}\`\n\n**Code**\n\`${error.code}\`\n\n**Status**\n\`${error.status}\`\n\n**Request**\n\`${error.method?.toUpperCase()} ${error.url}\`\n\n${error.requestBody?.json ? `**Data**\n\`\`\`${JSON.stringify(error.requestBody.json)}\`\`\`\n\n` : ""}${error.origin ? `**Origin**\n\`\`\`${error.origin}\`\`\`\n\n` : ""}**Stack**\n\`\`\`${error.stack}`, 4093) + "```"
       })
     } else {
       await sendMessage(await getChannel(config.channels.errors), {
-        title: "An error occured",
+        title: "An error occurred",
         description: limit(`\`${error.message}\`\n\n**Stack**\n\`\`\`${error.stack}`, 4093) + "```"
       })
     }
@@ -257,14 +295,19 @@ process.on("unhandledRejection", async error => {
     }
     console.error(error.stack)
   }
+}
+process.on("unhandledRejection", handleError)
+process.on("uncaughtException", async error => {
+  await handleError(error).catch(() => {})
+  process.exit(1)
 })
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-client.once("ready", async () => {
+client.once("clientReady", async () => {
   console.log(`${client.user.displayName} online`)
   await reloadAll()
-  client.emit("ready")
+  client.emit("clientReady")
 })
 
 //////////////////////////////////////////////////////////////////////////////////////
