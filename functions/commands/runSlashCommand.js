@@ -1,5 +1,4 @@
 registerFunction(scriptName, async interaction => {
-  interaction.author = interaction.user
   let command = client.slashCommands.get(interaction.commandName)
   let subCommand
   if (!command.execute) {
@@ -10,14 +9,7 @@ registerFunction(scriptName, async interaction => {
       command = command.get(subCommand)
     }
   }
-  const commandName = command.command
-  Object.defineProperty(interaction, "command", {
-    get: () => command
-  })
-  interaction.aliasUsed = command.command
-  if (await permCheck(interaction, command) !== true) return
-  if (!await cooldownCheck(interaction, command)) return
-  if (!interaction.member) interaction.member = createMember(interaction.user)
+  if (await preCommand(interaction, command) !== true) return
   interaction.commandRun = `/${command.tree.join(" ")}`
   const args = []
   if (command.options) for (const arg of command.options) {
@@ -76,4 +68,5 @@ registerFunction(scriptName, async interaction => {
   } catch(error) {
     return commandError(interaction, error)
   }
+  postCommand(interaction)
 })

@@ -3,12 +3,7 @@ registerFunction(scriptName, async (command, message, args) => {
     args[0] = command.name
     command = client.prefixCommands.get("help")
   } else if (command.name !== "help" && args.length === 1 && args[0].toLowerCase().match(/^["“”]help["“”]$/)) args[0] = "help"
-  message.command = command
-  if (await permCheck(message, command) !== true) return
-  if (!await cooldownCheck(message, command)) return
-  if (!message.member) Object.defineProperty(message, "member", {
-    get: () => createMember(message.author)
-  })
+  if (await preCommand(message, command) !== true) return
   if (!command.typingless) await message.channel.sendTyping().catch(() => {})
   if (command.arguments) for (const [i, arg] of command.arguments.entries()) {
     const argSplit = arg.split(":")
@@ -41,4 +36,5 @@ registerFunction(scriptName, async (command, message, args) => {
   } catch(error) {
     return commandError(message, error)
   }
+  postCommand(message)
 })

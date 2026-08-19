@@ -1,13 +1,6 @@
 registerFunction(scriptName, async interaction => {
-  interaction.author = interaction.user
   const command = client.contextCommands.get(interaction.commandName)
-  const commandName = command.command
-  Object.defineProperty(interaction, "command", {
-    get: () => command
-  })
-  if (await permCheck(interaction, command) !== true) return
-  if (!await cooldownCheck(interaction, command)) return
-  if (!interaction.member) interaction.member = createMember(interaction.user)
+  if (await preCommand(interaction, command) !== true) return
   interaction.commandRun = interaction.commandName
   let args = []
   if (isType.command(interaction, "Message")) interaction.reference = {
@@ -28,4 +21,5 @@ registerFunction(scriptName, async interaction => {
   } catch(error) {
     return commandError(interaction, error)
   }
+  postCommand(interaction)
 })

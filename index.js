@@ -113,6 +113,7 @@ client.colours = {
   success: "#43B481"
 }
 client.stats = {}
+client.commandInstances = {}
 client.modPermissions = [
   "ManageMessages",
   "ModerateMembers",
