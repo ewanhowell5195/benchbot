@@ -1,17 +1,29 @@
 registerEvent(scriptName, async interaction => {
   if (isType.interaction(interaction, "ApplicationCommand")) {
+    Object.defineProperty(interaction, "command", {
+      value: undefined,
+      configurable: true
+    })
     if (isType.command(interaction, "ChatInput")) return runSlashCommand(interaction)
     else return runContextCommand(interaction)
   } else if (isType.interaction(interaction, "ApplicationCommandAutocomplete")) {
+    const respond = interaction.respond.bind(interaction)
+    interaction.respond = data => respond(data).catch(() => {})
     let command = client.slashCommands.get(interaction.commandName)
+    if (!command) {
+      return interaction.respond([{ name: "This command no longer exists", value: "unregistered" }])
+    }
     let subCommand
     if (!command.execute) {
       subCommand = interaction.options.getSubcommandGroup() ?? interaction.options.getSubcommand()
       command = command.get(subCommand)
-      if (!command.execute) {
+      if (!command?.execute) {
         subCommand = interaction.options.getSubcommand()
-        command = command.get(subCommand)
+        command = command?.get(subCommand)
       }
+    }
+    if (!command) {
+      return interaction.respond([{ name: "This command no longer exists", value: "unregistered" }])
     }
     let name
     for (const option of interaction.options.data) {
@@ -30,7 +42,8 @@ registerEvent(scriptName, async interaction => {
         }
       }
     }
-    const autocomplete = command.options.find(e => (e.name ?? e.type) === name).autocomplete
+    const autocomplete = command.options?.find(e => (e.name ?? e.type) === name)?.autocomplete
+    if (!autocomplete) return interaction.respond([])
     if (typeof autocomplete === "function") autocomplete(interaction, interaction.options.getFocused().toLowerCase(), interaction.options)
     else if (Array.isArray(autocomplete)) interaction.respond(filteredSort(autocomplete, interaction.options.getFocused().toLowerCase(), 25).map(e => ({ name: e, value: e })))
     else {
@@ -38,26 +51,7 @@ registerEvent(scriptName, async interaction => {
       client.autocompletes.get(split[0]).execute(interaction, interaction.options.getFocused().toLowerCase(), interaction.options, split[1])
     }
   } else if (interaction.isButton()) {
-    if (interaction.customId.startsWith("delete_")) {
-      if (interaction.user.id === interaction.customId.match(/^delete_(\d+)$/)[1] || hasPerm(interaction.member, "ManageMessages", interaction.channel) || isMod(interaction.member)) {
-        deleteMessage(interaction.message)
-        if (interaction.message.reference) {
-          const message = await getMessage(interaction.channel, interaction.message.reference.messageId)
-          if (message && !message.attachments?.size) deleteMessage(message)
-        }
-        return
-      }
-      return sendPrivateMessage(interaction, { description: "Only the message author can do that" })
-    } else if (interaction.customId === "jobs_access_button") {
-      if (interaction.member.roles.cache.has(config.roles.jobs)) {
-        return sendPrivateMessage(interaction, {
-          description: "You already have access to the job channels"
-        })
-      }
-      interaction.showModal(component.modal("Job Channel Access", [
-        component.text("## Warning\nBe cautious when using the Job Channels. They are not moderated or verified by the server team.\n\n## Verification\nAlways confirm that the people you work with are genuine. Check that portfolios belong to them and that clients can prove they can pay.\n\n## Responsibility\nBy clicking submit, you acknowledge that you understand these risks and will take responsibility for verifying anyone you work with.")
-      ], "jobs_access_modal"))
-    }
+    return buttonHandler(interaction)
   } else if (interaction.isModalSubmit()) {
     if (interaction.customId === "jobs_access_modal") {
       await interaction.member.roles.add(config.roles.jobs)
