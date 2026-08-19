@@ -29,7 +29,7 @@ registerPrefixCommand(scriptName, prefixPath, {
       options: ["Start!"],
       keep: true
     })
-    if (!start) return
+    if (!start[0]) return
     let processing = start[1]
 
     async function askSimple(args) {
@@ -39,7 +39,7 @@ registerPrefixCommand(scriptName, prefixPath, {
         message: processing,
         keep: true
       })
-      if (!ask) return
+      if (!ask[0]) return
       processing = ask[1]
       return args.options[parseInt(ask[0])]
     }
