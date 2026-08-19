@@ -16,7 +16,7 @@ registerFunction(scriptName, async (command, message, args) => {
     command = client.prefixCommands.get("help")
   } else if (command.name !== "help" && args.length === 1 && args[0].toLowerCase().match(/^["“”]help["“”]$/)) args[0] = "help"
   if (await preCommand(message, command) !== true) return
-  if (command.options?.quotes) args = Array.from(args.join(" ").matchAll(/(?<=^|(?<=\S)\s|["“”])(?:\s)*?([^\r\t\f\v \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff"“”]+)|["“”]([^"“”]*)(?:["“”]|$)/g)).map(e => e[1] ?? e[2])
+  if (command.quotes) args = Array.from(args.join(" ").matchAll(/(?<=^|(?<=\S)\s|["“”])(?:\s)*?([^\r\t\f\v \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff"“”]+)|["“”]([^"“”]*)(?:["“”]|$)/g)).map(e => e[1] ?? e[2])
   if (!command.typingless) await sendTyping(message.channel)
   if (command.arguments) {
     try {

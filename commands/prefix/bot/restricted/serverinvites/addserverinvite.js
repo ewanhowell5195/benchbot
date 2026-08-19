@@ -5,9 +5,7 @@ registerPrefixCommand(scriptName, prefixPath, {
   guildOnly: true,
   aliases: ["addserver", "addinvite"],
   permissions: ["ManageGuild"],
-  options: {
-    quotes: true
-  },
+  quotes: true,
   arguments: [
     {
       name: "name",
