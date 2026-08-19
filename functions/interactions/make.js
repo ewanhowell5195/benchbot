@@ -73,7 +73,17 @@ registerFunction(scriptName, {
       customId: args.id || Math.random().toString(),
       title: args.title
     })
-    for (const row of args.rows) modal.addComponents(makeRow(row))
+    for (const row of args.rows) {
+      if (typeof row === "string") {
+        modal.addTextDisplayComponents(component.text(row))
+      } else {
+        modal.addComponents(component.label({
+          label: row.label,
+          description: row.description,
+          component: row.component
+        }))
+      }
+    }
     return modal
   }
 })

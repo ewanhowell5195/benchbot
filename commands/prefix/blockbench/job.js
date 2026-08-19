@@ -45,41 +45,48 @@ registerPrefixCommand(scriptName, prefixPath, {
     }
 
     async function askDetailed(args, func) {
-      processing = await sendMessage(message, {
-        description: args.question,
-        fields: args.fields,
-        components: [makeRow({
-          buttons: [
-            {
-              label: args.button ?? "Answer",
-              emoji: client.emotes.pencilWhite,
-              customId: "modal"
-            },
-            args.skippable ? {
-              label: "Skip",
-              emoji: client.emotes.arrowRightWhite,
-              customId: "skip"
-            } : undefined
-          ].filter(Boolean)
-        })],
-        fetch: true,
-        processing
-      })
-      if (!await modalHandler(message, processing, {
-        title: `Job Creator - ${args.title}`,
-        rows: args.options.map(e => {
-          e.required = true
-          e.invalidChars = /\\|`/
-          return { text: e }
-        })
-      }, fields => {
-        func(fields)
-        return true
-      }, {
-        authorOnly: true,
-        leave: true,
+      const modal = await modalHandler(message, processing, {
+        prompt: {
+          components: [
+            component.container(message, [
+              args.question,
+              ...(args.fields ?? []).map(e => `### ${e[0]}\n${e[1]}`)
+            ]),
+            component.row(...[
+              component.button({
+                id: "modal",
+                label: args.button ?? "Answer",
+                emoji: client.emotes.pencilWhite
+              }),
+              args.skippable ? component.button({
+                id: "skip",
+                label: "Skip",
+                emoji: client.emotes.arrowRightWhite
+              }) : undefined
+            ].filter(Boolean))
+          ]
+        },
+        modal: {
+          title: `Job Creator - ${args.title}`,
+          rows: args.options.map(e => ({
+            label: e.label,
+            type: e.type,
+            invalidChars: /\\|`/,
+            component: component.input({
+              id: e.id,
+              placeholder: e.placeholder,
+              maxLength: e.maxLength ?? (e.type === "url" ? 256 : undefined),
+              minLength: e.minLength,
+              long: e.long,
+              required: true
+            })
+          }))
+        },
         timeout: 600
-      }, interaction => true)) return
+      })
+      if (modal.timeout) return
+      processing = modal.message ?? processing
+      func(modal.fields)
       return true
     }
 
@@ -262,10 +269,11 @@ registerPrefixCommand(scriptName, prefixPath, {
         })
       }
     }
+    if (processing) deleteMessage(processing.message ?? processing)
     check = await confirm(message, {
       description: `Here is a preview of your job post. It will be posted in <#${job.channel}>\n\nDo you want to submit the job post?`,
       embeds: job.embeds,
-      processing
+      cv2: false
     })
     if (!check[0]) return editMessage(check[1], {
       description: "The job post has been aborted"

@@ -1,110 +1,111 @@
-registerFunction(scriptName, async (message, modalMessage, modal, func, args, func2) => {
-  let finished
-  const fields = args.fields ?? {}
-  if (modalMessage) {
-    await interactionHandler(modalMessage, async (interaction, collector, state) => {
-      if (args?.authorOnly && interaction.user.id !== message.author.id) return sendPrivateMessage(interaction, { description: "Only the command author can do that" })
-      if (isType.interaction(interaction, "ModalSubmit")) {
-        if (args.defer !== false) interaction.deferUpdate()
-        const [modal2, errorFields, required] = await parseModalFields(interaction, modal, fields, args)
-        if (errorFields.length) {
-          let buttons = [{
-            label: "Re-enter data",
-            emoji: client.emotes.pencilWhite,
-            customId: "modal"
-          }]
-          if (!required) buttons.push({
-            label: "Skip",
-            customId: "skip",
-            emoji: client.emotes.arrowRightWhite
-          })
-          if (args.errorButtons) buttons = buttons.concat(args.errorButtons.filter(e => !(e.disableSkip && required)))
-          modal = modal2
-          return await sendMessage(args.interaction ?? message, {
-            title: "There were some issues with that input",
-            fields: errorFields,
-            components: [makeRow({
-              buttons
-            })],
-            processing: args.interaction ? undefined : modalMessage
-          })
-        }
-        finished = await func(fields, interaction, null, modalMessage)
-        if (finished) {
-          state.timeout = false
-          if (finished === 2) finished = false
-          collector.stop()
-        }
-        return
-      }
-      if (interaction.customId === "modal") interaction.showModal(makeModal(modal))
-      else if (interaction.customId === "skip") {
-        if (args.defer !== false) interaction.deferUpdate()
-        finished = await func(fields, interaction, true)
-        if (finished) {
-          state.timeout = false
-          if (finished === 2) finished = false
-          collector.stop()
-        }
-      }
-      else {
-        finished = await func2?.(interaction, {func, fields})
-        if (finished) {
-          state.timeout = false
-          if (finished === 2) finished = false
-          collector.stop()
-        }
-        return
-      }
-    }, {
-      timeout: args.timeout ?? 300,
-      timeoutMessage: "The command timed out...",
-      leave: args.leave
-    })
-  } else {
-    message.showModal(makeModal(modal))
-    const interaction = await message.awaitModalSubmit({
-      time: 300000
-    }).catch(e => {
-      if (e.message !== "Collector received no interactions before ending with reason: time") console.error(e)
-      return
-    })
-    if (!interaction) {
-      sendError(message, {
-        message: "Took too long",
-        description: `${message.author} took too long, the modal timed out.`
-      })
-      return
-    }
-    const [modal2, errorFields, required] = await parseModalFields(interaction, modal, fields, args)
-    if (errorFields.length) {
-      let buttons = [{
+registerFunction(scriptName, async (message, modalMessage, { prompt, modal, onSubmit, onTimeout, onInteraction, authorOnly = true, timeout = 300, errorButtons, defer = true }) => {
+  let state = {}
+  const fields = {}
+  const makeErrorButtons = required => {
+    const buttons = [
+      component.button({
+        id: "modal",
         label: "Re-enter data",
-        emoji: client.emotes.pencilWhite,
-        customId: "modal"
-      }]
-      if (!required) buttons.push({
+        emoji: client.emotes.pencilWhite
+      })
+    ]
+    if (!required) {
+      buttons.push(component.button({
+        id: "skip",
         label: "Skip",
-        customId: "skip",
         emoji: client.emotes.arrowRightWhite
-      })
-      if (args.errorButtons) buttons = buttons.concat(args.errorButtons.filter(e => !(e.disableSkip && required)))
-      const modalMessage = await sendMessage(interaction, {
-        title: "There were some issues with that input",
-        fields: errorFields,
-        components: [makeRow({
-          buttons
-        })],
-        fetch: true
-      })
-      args.interaction = interaction
-      args.fields = fields
-      if (!(await modalHandler(message, modalMessage, modal2, func, args, func2))) return
-      finished = true
+      }))
+    }
+    if (errorButtons) {
+      buttons.push(...errorButtons.map(e => component.button(e)))
+    }
+    return buttons
+  }
+  const makeErrorComponents = (errors, required) => [
+    component.text("## There were some issues with that input"),
+    component.separator(),
+    ...errors.map(e => component.text(`### ${e[0]}\n${e[1]}`)),
+    component.separator(),
+    component.row(...makeErrorButtons(required))
+  ]
+  if (prompt) {
+    if (!modalMessage && message instanceof Discord.BaseInteraction && typeof message.showModal === "function" && !message.replied && !message.deferred) {
+      modal.id ??= Math.random().toString()
+      const author = message.author ?? message.user
+      message.showModal(makeModal(modal))
+      const submit = await message.awaitModalSubmit({
+        time: timeout * 1000,
+        filter: e => e.customId === modal.id && e.user.id === author.id
+      }).catch(() => {})
+      if (!submit) {
+        state.timeout = true
+        if (onTimeout) await onTimeout(state)
+        state.fields = fields
+        return state
+      }
+      const [modal2, errors, required] = await parseModalFields(submit, modal, fields)
+      if (!errors.length) {
+        state.timeout = false
+        state.interaction = submit
+        state.messages = []
+        if (onSubmit) await onSubmit(fields, submit, { state })
+        state.fields = fields
+        return state
+      }
+      modal = modal2
+      await sendComponents(submit, makeErrorComponents(errors, required))
+      modalMessage = submit.message
     } else {
-      finished = await func(fields, interaction, null, interaction)
-      if (finished === 2) finished = false
+      modalMessage = await sendComponents(message, prompt, modalMessage)
     }
   }
-  return finished
+  state = await interactionHandler(modalMessage, async (interaction, collector, s) => {
+    state = s
+    if (isType.interaction(interaction, "ModalSubmit")) {
+      if (defer) interaction.deferUpdate()
+      const [modal2, errors, required] = await parseModalFields(interaction, modal, fields)
+      if (errors.length) {
+        modal = modal2
+        state.message = await sendComponents(message, makeErrorComponents(errors, required), state.message)
+        return
+      }
+      if (!onSubmit || await onSubmit(fields, interaction, { state })) {
+        state.timeout = false
+        collector.stop()
+      }
+      return
+    }
+
+    if (interaction.customId === "modal") {
+      interaction.showModal(makeModal(modal))
+    } else if (interaction.customId === "skip") {
+      if (defer) interaction.deferUpdate()
+      if (!onSubmit || await onSubmit(fields, interaction, { state, skipped: true })) {
+        state.timeout = false
+        collector.stop()
+      }
+    } else if (onInteraction) {
+      if (await onInteraction(interaction, { state, fields, onSubmit })) {
+        state.timeout = false
+        collector.stop()
+      }
+      if (defer && !interaction.replied && !interaction.deferred) {
+        interaction.deferUpdate().catch(() => {})
+      }
+    }
+  }, {
+    timeout,
+    author: authorOnly ? message.author ?? message.user : undefined,
+    timeoutMessage: onTimeout ? undefined : {
+      title: "Timed out…",
+      description: "The command timed out as you took too long to respond"
+    }
+  })
+
+  if (onTimeout && state.timeout) {
+    await onTimeout(state)
+  }
+
+  state.fields = fields
+  return state
 })

@@ -11,65 +11,53 @@ registerPrefixCommand(scriptName, prefixPath, {
       title: "Maximum number of rules",
       description: "The maximum number of rules that you can have is `15`"
     })
-    let modalMessage
-    if (!message.command.application) {
-      modalMessage = await sendMessage(message, {
-        description: "Press the button to add a new rule",
-        components: [makeRow({
-          buttons: [{
-            label: "Add rule",
-            emoji: client.emotes.pencilWhite,
-            customId: "modal"
-          }]
-        })]
-      })
-    }
     const rule = []
-    if (!await modalHandler(message, modalMessage, {
-      title: "Rule Creator",
-      rows: [
-        {
-          "text": {
-            id: "rule",
+    const modal = await modalHandler(message, undefined, {
+      prompt: {
+        description: "Press the button to add a new rule",
+        button: {
+          label: "Add rule",
+          emoji: client.emotes.pencilWhite,
+          id: "modal"
+        }
+      },
+      modal: {
+        title: "Rule Creator",
+        rows: [
+          {
             label: "Rule",
-            maxLength: 128,
-            placeholder: "No breaking the rules!",
-            required: true
-          }
-        },
-        {
-          "text": {
-            id: "description",
+            component: component.input({
+              id: "rule",
+              maxLength: 128,
+              placeholder: "No breaking the rules!",
+              required: true
+            })
+          },
+          {
             label: "Rule Description",
-            maxLength: 256,
-            placeholder: "Do not break the rules or you will be banned.",
-            long: true
+            component: component.input({
+              id: "description",
+              maxLength: 256,
+              placeholder: "Do not break the rules or you will be banned.",
+              long: true
+            })
           }
-        }
-      ]
-    }, async (fields, interaction, skipped, message) => {
-      rule.push(await insertDiscordMentions(message.guild, fields.rule))
-      if (fields.description) rule.push(await insertDiscordMentions(message.guild, fields.description))
-      modalMessage = message
-      return true
-    }, {
-      authorOnly: true,
-      leave: true
-    })) return
-    db.guilds.rules.add(message.guildId, rule)
-    sendMessage(message, {
-      embeds: [
-        {
-          title: "Rule added",
-          description: "The rule has been added to the server\n\nHere is a preview of the rule:"
-        },
-        {
-          author: ["Rules", client.icons.logs],
-          description: `## Rule ${count + 1}: ${rule[0]}\n${rule[1]}`
-        }
-      ],
-      processing: modalMessage,
-      components: []
+        ]
+      },
+      async onSubmit(fields) {
+        rule.push(await insertDiscordMentions(message.guild, fields.rule))
+        if (fields.description) rule.push(await insertDiscordMentions(message.guild, fields.description))
+        return true
+      }
     })
+    if (modal.timeout) return
+    const target = modal.interaction ?? message
+    db.guilds.rules.add(message.guildId, rule)
+    sendComponents(target, {
+      components: [
+        component.container(message, ["## Rule added\nThe rule has been added to the server\n\nHere is a preview of the rule:"]),
+        component.container(message, [`## Rule ${count + 1}: ${rule[0]}${rule[1] ? `\n${rule[1]}` : ""}`])
+      ]
+    }, modal.message)
   }
 })

@@ -1,4 +1,4 @@
-registerFunction(scriptName, async (interaction, modal, fields, args) => {
+registerFunction(scriptName, async (interaction, modal, fields) => {
   const errorFields = []
   const modal2 = {
     title: modal.title,
@@ -6,54 +6,142 @@ registerFunction(scriptName, async (interaction, modal, fields, args) => {
   }
   let required
   for (const row of modal.rows) {
-    if (row.text) {
-      let error
-      const text = interaction.fields.getTextInputValue(row.text.id).trim()
-      if (text) {
-        fields[row.text.id] = interaction.fields.getTextInputValue(row.text.id) || undefined
-        if (fields[row.text.id]) {
-          if (row.text.type) {
-            if (row.text.type === "url") {
-              const url = await argTypes.url(fields[row.text.id])
-              if (!url) {
-                error = true
-                errorFields.push([`Invalid URL for \`${row.text.label}\``, `The URL \`${fields[row.text.id]}\` was not a valid URL`])
-              } else fields[row.text.id] = url
-            } else if (row.text.type === "boolean") {
-              const boolean = await argTypes.boolean(fields[row.text.id])
-              if (boolean === undefined) {
-                error = true
-                errorFields.push([`Invalid boolean for \`${row.text.label}\``, `\`${fields[row.text.id]}\` is not a valid boolean\n\nPlease provide \`yes\` or \`no\``])
-              } else fields[row.text.id] = boolean
-            }
+    if (typeof row === "string") continue
+    let error
+    let text
+    if (row.component) {
+      const id = row.component.data.custom_id
+      if (row.component instanceof Discord.TextInputBuilder) {
+        text = {
+          id,
+          label: row.label,
+          required: row.component.data.required !== false,
+          type: row.type,
+          func: row.func,
+          validation: row.validation,
+          invalidChars: row.invalidChars,
+          min: row.min,
+          max: row.max,
+          default: row.default
+        }
+      } else if (row.component instanceof Discord.CheckboxBuilder) {
+        fields[id] = interaction.fields.getCheckbox(id)
+      } else if (row.component instanceof Discord.RadioGroupBuilder) {
+        const value = interaction.fields.getRadioGroup(id)
+        if (defined(value)) fields[id] = value
+        else if (defined(row.default)) fields[id] = row.default
+      } else if (row.component instanceof Discord.StringSelectMenuBuilder) {
+        const values = interaction.fields.getStringSelectValues(id)
+        if (values?.length) {
+          if ((row.component.data.max_values ?? 1) === 1) {
+            fields[id] = values[0]
+          } else {
+            fields[id] = values
           }
-          if (row.text.invalidChars) {
-            const match = fields[row.text.id].match(row.text.invalidChars)
-            if (match) {
+        }
+      } else if (row.component instanceof Discord.ChannelSelectMenuBuilder) {
+        const channels = interaction.fields.getSelectedChannels(id)
+        if (channels) {
+          if (row.component.data.max_values === 1) {
+            fields[id] = channels.first()
+          } else {
+            fields[id] = channels
+          }
+        }
+      } else if (row.component instanceof Discord.RoleSelectMenuBuilder) {
+        const roles = interaction.fields.getSelectedRoles(id)
+        if (roles) {
+          if (row.component.data.max_values === 1) {
+            fields[id] = roles.first()
+          } else {
+            fields[id] = roles
+          }
+        }
+      }
+      if (!text) {
+        if (!error && row.func) fields[id] = await row.func(fields[id], fields)
+        if (!error && row.validation) {
+          const validation = await row.validation(fields[id], fields)
+          if (validation) {
+            error = true
+            if (validation.required) required = true
+            if (validation.fields) modal2.rows.push(...validation.fields)
+            errorFields.push([`Validation failed for ${row.label.quote()}`, validation.message ?? validation])
+          }
+        }
+        if (error) {
+          modal2.rows.push(row)
+          if (row.component.data.required != false) {
+            required = true
+          }
+          fields[id] = undefined
+        }
+        continue
+      }
+    } else continue
+    const value = interaction.fields.getTextInputValue(text.id).userTrim()
+    if (value) {
+      fields[text.id] = interaction.fields.getTextInputValue(text.id) || undefined
+      if (fields[text.id]) {
+        if (text.type) {
+          if (text.type === "url") {
+            const url = await argTypes.url(fields[text.id])
+            if (!url) {
               error = true
-              errorFields.push([`Unsupported character in \`${row.text.label}\``, `You cannot use the \`${match[0] === "\n" ? "newline" : match[0] === " " ? "space" : match[0]}​\` character`])
+              errorFields.push([`Invalid URL for ${text.label.quote()}`, `The URL ${fields[text.id].quote()} was not a valid URL`])
+            } else fields[text.id] = url
+          } else if (text.type === "number") {
+            const number = await argTypes.number(fields[text.id], { errorless: true })
+            if (number === undefined) {
+              error = true
+              errorFields.push([`Invalid number for ${text.label.quote()}`, `${fields[text.id].quote()} is not a valid number`])
+            } else if (text.min && text.min > number) {
+              error = true
+              errorFields.push([`Value too small for ${text.label.quote()}`, `The minimum value is ${text.min.quote()}. You provided ${fields[text.id].quote()}`])
+            } else if (text.max && text.max < number) {
+              error = true
+              errorFields.push([`Value too large for ${text.label.quote()}`, `The maximum value is ${text.max.quote()}. You provided ${fields[text.id].quote()}`])
+            } else {
+              fields[text.id] = number
             }
+          } else if (text.type === "boolean") {
+            const boolean = await argTypes.boolean(fields[text.id])
+            if (boolean === undefined) {
+              error = true
+              errorFields.push([`Invalid boolean for ${text.label.quote()}`, `${fields[text.id].quote()} is not a valid boolean\n\nPlease provide \`yes\` or \`no\``])
+            } else fields[text.id] = boolean
           }
-          if (row.text.func) fields[row.text.id] = await row.text.func(fields[row.text.id], fields)
         }
-      } else if (row.text.required) {
+        if (text.invalidChars) {
+          const match = fields[text.id].match(text.invalidChars)
+          if (match) {
+            error = true
+            errorFields.push([`Unsupported character in ${text.label.quote()}`, `You cannot use the \`${match[0] === "\n" ? "newline" : match[0] === " " ? "space" : match[0]}​\` character`])
+          }
+        }
+        if (text.func) fields[text.id] = await text.func(fields[text.id], fields)
+      }
+    } else if (text.required) {
+      error = true
+      errorFields.push(["Missing required field", `${text.label.quote()} is a required field`])
+    } else if (defined(text.default)) {
+      fields[text.id] = text.default
+    } else {
+      fields[text.id] = undefined
+    }
+    if (!error && text.validation) {
+      const validation = await text.validation(fields[text.id], fields)
+      if (validation) {
         error = true
-        errorFields.push(["Missing required field", `\`${row.text.label}\` is a required field`])
+        if (validation.required) required = true
+        if (validation.fields) modal2.rows.push(...validation.fields)
+        errorFields.push([`Validation failed for ${text.label.quote()}`, validation.message ?? validation])
       }
-      if (!error && row.text.validation) {
-        const validation = await row.text.validation(fields[row.text.id], fields)
-        if (validation) {
-          error = true
-          if (validation.required) required = true
-          if (validation.fields) modal2.rows.push(...validation.fields)
-          errorFields.push([`Validation failed for \`${row.text.label}\``, validation.message ?? validation])
-        }
-      }
-      if (error) {
-        modal2.rows.push(row)
-        required = required || row.text.required
-        fields[row.text.id] = undefined
-      }
+    }
+    if (error) {
+      modal2.rows.push(row)
+      required = required || text.required
+      fields[text.id] = undefined
     }
   }
   return [modal2, errorFields, required]
