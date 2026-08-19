@@ -46,6 +46,6 @@ registerFunction(scriptName, (command, message, data) => new Promise(async (fulf
         reject()
       }
     } else sendPrivateMessage(interaction, { description: "Only the command author can do that" })
-  }, { destroy: true })
+  }, { fixed: true, delete: true })
   reject()
 }))
