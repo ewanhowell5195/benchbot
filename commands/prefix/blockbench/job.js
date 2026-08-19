@@ -280,12 +280,10 @@ registerPrefixCommand(scriptName, prefixPath, {
     const sent = await sendMessage(await getChannel(job.channel), { embeds: job.embeds })
     sendMessage(message, {
       description: `Your job has been posted!\n\nIf you want to remove the job post, you can react with <:delete:${config.emotes.delete}> to remove it.`,
-      components: [makeRow({
-        buttons: [{
-          label: "Jump to post…",
-          url: `https://discord.com/channels/${sent.guildId}/${sent.channelId}/${sent.id}`
-        }]
-      })],
+      components: [component.row(component.button({
+        label: "Jump to post…",
+        url: `https://discord.com/channels/${sent.guildId}/${sent.channelId}/${sent.id}`
+      }))],
       processing
     })
   }

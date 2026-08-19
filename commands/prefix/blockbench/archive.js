@@ -86,12 +86,10 @@ registerPrefixCommand(scriptName, prefixPath, {
     if (message.command.slash) sendMessage(message, {
       description: "The model was added to the archive!",
       ephemeral: true,
-      components: [makeRow({
-        buttons: [{
-          label: "Jump to archive...",
-          url: `https://discord.com/channels/${archive.guildId}/${archive.channelId}/${archive.messageId}`
-        }]
-      })]
+      components: [component.row(component.button({
+        label: "Jump to archive...",
+        url: `https://discord.com/channels/${archive.guildId}/${archive.channelId}/${archive.messageId}`
+      }))]
     })
     else timedReact(message, client.emotes.success)
     react(archive, config.emotes.like)

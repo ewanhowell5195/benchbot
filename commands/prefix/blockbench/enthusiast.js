@@ -24,7 +24,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     while (items.length) {
       const buttons = items.slice(0, 5)
       items = items.slice(5)
-      components.push(makeRow({ buttons }))
+      components.push(component.row(...buttons.map(e => component.button(e))))
     }
     if (posts.length < config.likes.posts) return sendMessage(message, {
       title: `${message.member === member ? "You" : "They"} are getting there!`,

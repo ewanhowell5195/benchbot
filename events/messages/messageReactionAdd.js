@@ -40,7 +40,7 @@ registerEvent(scriptName, async (reaction, user) => {
           while (posts.length) {
             const buttons = posts.slice(0, 5)
             posts = posts.slice(5)
-            components.push(makeRow({ buttons }))
+            components.push(component.row(...buttons.map(e => component.button(e))))
           }
           sendMessage(await getChannel(config.channels.showcase), {
             message: `Congratulations ${author}!`,

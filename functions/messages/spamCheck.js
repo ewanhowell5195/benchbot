@@ -149,12 +149,10 @@ registerFunction(scriptName, _message => {
         ["Member", `${message.member} \`${message.member.id}\``],
         ["Channel", message.channel.toString()]
       ],
-      components: [makeRow({
-        buttons: [{
-          label: "Jump to message…",
-          url: `https://discord.com/channels/${message.guildId}/${message.channelId}/${message.id}`
-        }]
-      })]
+      components: [component.row(component.button({
+        label: "Jump to message…",
+        url: `https://discord.com/channels/${message.guildId}/${message.channelId}/${message.id}`
+      }))]
     })
     return
   }

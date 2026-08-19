@@ -21,13 +21,7 @@ registerPrefixCommand(scriptName, prefixPath, {
       return sendMessage(message, {
         author: ["Rules", client.icons.logs],
         description: `## Rule ${rule}: ${ruleData[0]}\n${ruleData[1]}`,
-        components: [makeRow({
-          buttons: [{
-            customId: `delete_${message.author.id}`,
-            emoji: client.emotes.binWhite,
-            style: "red"
-          }]
-        })]
+        deletable: true
       })
     }
     const rules = db.guilds.rules.all(config.guild)
@@ -49,13 +43,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     embeds[0].author = ["Rules", client.icons.logs]
     sendMessage(message, {
       embeds,
-      components: [makeRow({
-        buttons: [{
-          customId: `delete_${message.author.id}`,
-          emoji: client.emotes.binWhite,
-          style: "red"
-        }]
-      })]
+      deletable: true
     })
   }
 })

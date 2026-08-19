@@ -5,28 +5,26 @@ registerFunction(scriptName, (command, message, data) => new Promise(async (fulf
   const error = await sendError(message, {
     title: "Incorrect command",
     description: `The command \`${limit(command)}\` doesn't exist.\n\nDid you mean \`${closest}\`?`,
-    components: [makeRow({
-      buttons: [
-        {
-          label: "Run",
-          customId: "run",
-          emoji: client.emotes.tickWhite,
-          style: "green"
-        },
-        {
-          label: "Delete",
-          customId: "delete",
-          emoji: client.emotes.binWhite,
-          style: "red"
-        },
-        {
-          label: "Info",
-          customId: "info",
-          emoji: client.emotes.questionWhite,
-          style: "blue"
-        }
-      ]
-    })],
+    components: [component.row(
+      component.button({
+        label: "Run",
+        id: "run",
+        emoji: client.emotes.tickWhite,
+        style: "green"
+      }),
+      component.button({
+        label: "Delete",
+        id: "delete",
+        emoji: client.emotes.binWhite,
+        style: "red"
+      }),
+      component.button({
+        label: "Info",
+        id: "info",
+        emoji: client.emotes.questionWhite,
+        style: "blue"
+      })
+    )],
     ephemeral: false,
     fetch: true,
     deletable: false

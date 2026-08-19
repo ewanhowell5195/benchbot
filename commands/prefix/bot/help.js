@@ -76,7 +76,7 @@ registerPrefixCommand(scriptName, prefixPath, {
         url: link[1]
       })
     }
-    if (buttons.length) embed.components = [makeRow({buttons})]
+    if (buttons.length) embed.components = [component.row(...buttons.map(e => component.button(e)))]
     if (interaction instanceof Discord.BaseInteraction && interaction.isButton?.()) return sendPrivateMessage(interaction, embed)
     sendMessage(message, embed)
   }

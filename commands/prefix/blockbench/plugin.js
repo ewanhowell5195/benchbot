@@ -69,7 +69,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     } else if (entry[0] === "cem_template_loader") {
       const cem = await cache.cem()
       let length = 0
-      fields.push(["Template model counts", cem.categories.map(e => {
+      fields.push(["Template model counts", cem.categories.filter(e => !e.type).map(e => {
         length = Math.max(length, e.name.length)
         return e
       }).map(e => `\`${e.name.padEnd(length)}\` - \`${e.entities.length}\``).join("\n")])
@@ -81,18 +81,16 @@ registerPrefixCommand(scriptName, prefixPath, {
       thumbnail: entry[1].icon.endsWith(".png") ? `https://cdn.jsdelivr.net/gh/JannisX11/blockbench-plugins/plugins/${entry[0]}/${entry[1].icon}` : undefined,
       footer: [`By ${entry[1].author}${entry[1].creation_date ? " - Released" : ""}`],
       timestamp: Date.parse(entry[1].creation_date),
-      components: [makeRow({
-        buttons: [
-          {
-            label: "View Plugin",
-            url: `https://www.blockbench.net/plugins/${entry[0]}`
-          },
-          entry[1].variant === "desktop" ? undefined : {
-            label: "Install in web app",
-            url: `https://web.blockbench.net/?plugins=${entry[0]}`
-          }
-        ].filter(Boolean)
-      })],
+      components: [component.row(...[
+        component.button({
+          label: "View Plugin",
+          url: `https://www.blockbench.net/plugins/${entry[0]}`
+        }),
+        entry[1].variant === "desktop" ? undefined : component.button({
+          label: "Install in web app",
+          url: `https://web.blockbench.net/?plugins=${entry[0]}`
+        })
+      ].filter(Boolean))],
       processing
     })
   }
