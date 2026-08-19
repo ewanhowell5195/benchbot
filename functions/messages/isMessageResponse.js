@@ -1,0 +1,1 @@
+registerFunction(scriptName, response => response instanceof Discord.Message || response instanceof Discord.BaseInteraction || response instanceof Discord.InteractionResponse)
