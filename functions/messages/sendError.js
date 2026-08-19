@@ -96,12 +96,5 @@ registerFunction(scriptName, {
       description: `\`${limit(arg.toString())}\` is not a valid \`${type.toTitleCase(true)}\``,
       processing: data?.processing
     })
-  },
-  sendParentError(message, processing) {
-    return sendError(message, {
-      title: "Unable to determine parent server",
-      description: "Please try again later\n\nPerhaps there is a server outage, or the server no longer exists",
-      processing
-    })
   }
 })

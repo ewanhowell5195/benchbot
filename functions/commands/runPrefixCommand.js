@@ -34,7 +34,7 @@ registerFunction(scriptName, async (command, message, args) => {
             description
           })
         }
-        if (argument.type !== "image" && !args[i]) {
+        if (!args[i]) {
           if (defined(argument.default)) args[i] = argument.default
           else {
             argArray.push(null)

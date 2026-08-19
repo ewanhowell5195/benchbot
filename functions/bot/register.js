@@ -37,7 +37,7 @@ registerFunction(scriptName, {
         details.Default = args.default
       }
       argType.render?.(details, args)
-      let str = `- ${args.required || !args.optional && args.type === "image" ? "*" : ""}**${args.id}** : `
+      let str = `- ${args.required ? "*" : ""}**${args.id}** : `
       if (argType.link) {
         str += `[${details.type}](${argType.link})`
       } else {
@@ -78,7 +78,7 @@ registerFunction(scriptName, {
     if (!command.permissions) command.permissions = []
     if (!command.botPermissions) command.botPermissions = []
     if (command.arguments) {
-      let requiredCheck, imageCheck
+      let requiredCheck
       for (const argument of command.arguments) {
         argument.type ??= "string"
         argument.name = argument.name || argTypes[argument.type].displayName
@@ -86,8 +86,6 @@ registerFunction(scriptName, {
         argument.name = argument.name.toTitleCase(true)
         if (!argument.required) requiredCheck = true
         else if (requiredCheck && argument.required) throw Error(`The command "${name}" has required arguments after non-required arguments`)
-        if (argument.type === "image") imageCheck = true
-        else if (imageCheck && argument.type !== "image") throw Error(`The command "${name}" has a non-image argument after an image argument`)
         if (argument.allowedCharacters) {
           argument.allowedCharactersRegex = new RegExp(`[^${argument.allowedCharacters}]`, "i")
           argument.allowedCharacters = argument.allowedCharacters.replace("\\\\", "\\")
