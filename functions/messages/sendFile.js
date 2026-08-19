@@ -1,6 +1,14 @@
+async function tryFile(args) {
+  try {
+    return await makeFile(args)
+  } catch (err) {
+    console.error(err)
+  }
+}
+
 registerFunction(scriptName, async (message, data) => {
   const channel = message.channel ?? message
-  const files = [await makeFile(data)]
+  const files = [await tryFile(data)]
   if (!files[0]) return sendError(message, {
     title: "Unable to save image",
     description: "An error occured while trying to save that image",
@@ -61,7 +69,7 @@ registerFunction(scriptName, async (message, data) => {
   let footerText = `${data.name} - ${width}x${height} - ${formatBytes(files[0].attachment instanceof Buffer ? Buffer.byteLength(files[0].attachment) : fs.statSync(files[0].attachment).size)}`
   if (data.extras) {
     for (const extra of data.extras) {
-      const file = await makeFile(extra)
+      const file = await tryFile(extra)
       if (!file) return sendError(message, {
         title: "Unable to save image",
         description: "An error occured while trying to save that image",
@@ -93,7 +101,7 @@ registerFunction(scriptName, async (message, data) => {
   embeds[0].setFooter({text: footerText})
   if (data.thumbnail) {
     embeds[0].setThumbnail(`attachment://${data.thumbnail.name}`)
-    files.push(await makeFile(data.thumbnail))
+    files.push(await tryFile(data.thumbnail))
   }
   if (data.processing) try {
     return await (message.command.application ? message.editReply.bind(message) : data.processing.edit.bind(data.processing))({
