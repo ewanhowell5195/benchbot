@@ -44,7 +44,8 @@ registerFunction(scriptName, async (message, args) => {
     }
     components = components.map(e => component.row(...e))
   }
-  const cv2 = args.cv2 ?? (args.message && hasFlag.message(args.message, "IsComponentsV2"))
+  const target = args.message?.message ?? args.message
+  const cv2 = args.cv2 ?? (target instanceof Discord.Message && hasFlag.message(target, "IsComponentsV2"))
   let optionMessage
   let container
   if (cv2) {

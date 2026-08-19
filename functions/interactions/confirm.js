@@ -1,6 +1,7 @@
 registerFunction(scriptName, async (message, args) => {
   let confirmMessage
-  const cv2 = args.cv2 ?? (args.processing && hasFlag.message(args.processing, "IsComponentsV2"))
+  const target = args.processing?.message ?? args.processing
+  const cv2 = args.cv2 ?? (target instanceof Discord.Message && hasFlag.message(target, "IsComponentsV2"))
   const buttons = component.row(
     component.button({
       label: args.text ?? "Confirm",
