@@ -45,7 +45,7 @@ registerFunction(scriptName, async (message, command) => {
     }
   } catch (error) {
     await sendError(message, {
-      title: "An error occured while processing that command:",
+      title: "An error occurred while processing that command",
       description: `\`\`\`${error.message}\`\`\``,
       footer: ["This error has been logged."]
     })

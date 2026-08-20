@@ -3,7 +3,7 @@ registerFunction(scriptName, async (message, error) => {
   if (message.command && error.message === "Missing Permissions") return react(message, client.emotes.crossWhite)
   console.error(error)
   await sendError(message, {
-    title: "An error occured while processing that command:",
+    title: "An error occurred while processing that command",
     description: `\`\`\`${error.message}\`\`\``,
     footer: ["This error has been logged."]
   }).catch(() => {})
