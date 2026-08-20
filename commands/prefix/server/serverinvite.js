@@ -13,7 +13,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     const invites = db.guilds.serverInvites.all(config.guild)
     if (!invites.length) return sendError(message, {
       title: "No server invites",
-      description: "There are no server invites set up in this server"
+      description: "There are no server invites configured in this server"
     })
     if (!name) return sendMessage(message, {
       author: ["Server invites", client.icons.discord],

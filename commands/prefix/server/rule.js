@@ -27,7 +27,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     const rules = db.guilds.rules.all(config.guild)
     if (!rules.length) return sendError(message, {
       title: "No rules",
-      description: "There are no rules set up in this server"
+      description: "There are no rules configured in this server"
     })
     const embeds = []
     let description = ""
