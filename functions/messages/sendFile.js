@@ -1,7 +1,7 @@
 registerFunction(scriptName, async (message, data) => {
   const file = await makeFile(data)
   if (!file?.attachment?.length) return sendError(message, {
-    title: "Unable to save file",
+    title: "Failed to save file",
     description: "An error occurred while trying to save that file",
     processing: data.processing
   })
