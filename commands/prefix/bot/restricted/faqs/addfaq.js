@@ -112,7 +112,7 @@ registerPrefixCommand(scriptName, prefixPath, {
             })
           },
           {
-            label: "FAQ ID Aliases",
+            label: "FAQ ID aliases",
             invalidChars: /\\|`|"|“|”/,
             func(item, fields) {
               item = new Set(item.toLowerCase().split(",").map(e => e.userTrim().replace(/_|\s/g, "-")).filter(e => e && e !== faq.id))

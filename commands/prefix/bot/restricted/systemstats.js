@@ -59,15 +59,15 @@ registerPrefixCommand(scriptName, prefixPath, {
         ["Platform", `\`${process.platform} ${os.release()}\``],
         ["Uptime", `\`${durationString(os.uptime()*1000)}\``],
         ["CPU", `\`${os.cpus()[0].model}\``, true],
-        ["CPU Usage", `\`${formatPercentage(((await getCPUUsage()) * 100).toFixed(2))}\``, true],
+        ["CPU usage", `\`${formatPercentage(((await getCPUUsage()) * 100).toFixed(2))}\``, true],
         ["​", "​", true],
-        ["Total Memory", `\`${totalMem} GB\``, true],
-        ["Memory Usage", `\`${usedMem} GB (${percentage(usedMem, totalMem)})\``, true],
+        ["Total memory", `\`${totalMem} GB\``, true],
+        ["Memory usage", `\`${usedMem} GB (${percentage(usedMem, totalMem)})\``, true],
         ["​", "​", true],
-        ["Total Storage", `\`${formatBytes(storage.total)}\``, true],
-        ["Used Storage", `\`${formatBytes(storage.used)} (${percentage(storage.used, storage.total)})\``, true],
-        ["Free Storage", `\`${formatBytes(storage.free)} (${percentage(storage.free, storage.total)})\``, true],
-        ["Node.js Version", process.version.quote()]
+        ["Total storage", `\`${formatBytes(storage.total)}\``, true],
+        ["Used storage", `\`${formatBytes(storage.used)} (${percentage(storage.used, storage.total)})\``, true],
+        ["Free storage", `\`${formatBytes(storage.free)} (${percentage(storage.free, storage.total)})\``, true],
+        ["Node.js version", process.version.quote()]
       ]
     }).catch(() => {})
   }

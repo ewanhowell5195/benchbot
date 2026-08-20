@@ -13,7 +13,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     const processing = await sendProcessing(message)
     const plugins = await cache.plugins()
     if (!plugin) return sendMessage(message, {
-      title: "Available Blockbench Plugins",
+      title: "Available Blockbench plugins",
       description: `Use \`${getCommandName(message)} [plugin]\` to view the details about a specific plugin\n\n${quoteList(Object.values(plugins).map(e => e.title).sort())}`,
       deletable: true,
       processing
@@ -22,7 +22,7 @@ registerPrefixCommand(scriptName, prefixPath, {
     const closest = closestMatch(plugin, pluginList)
     if (!closest) return sendError(message, {
       title: "Unknown plugin",
-      description: `The plugin \`${limit(plugin)}\` was not found.\n\n**Available Blockbench Plugins**\n\n${quoteList(Object.values(plugins).map(e => e.title).sort())}`,
+      description: `The plugin \`${limit(plugin)}\` was not found.\n\n**Available Blockbench plugins**\n\n${quoteList(Object.values(plugins).map(e => e.title).sort())}`,
       processing
     })
     const entry = Object.entries(plugins).find(e => e[0] === closest || e[1].title === closest)
@@ -83,7 +83,7 @@ registerPrefixCommand(scriptName, prefixPath, {
       timestamp: Date.parse(entry[1].creation_date),
       components: [component.row(...[
         component.button({
-          label: "View Plugin",
+          label: "View plugin",
           url: `https://www.blockbench.net/plugins/${entry[0]}`
         }),
         entry[1].variant === "desktop" ? undefined : component.button({

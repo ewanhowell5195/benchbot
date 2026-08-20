@@ -37,7 +37,7 @@ Use the button below to gain access to the Job Channels.
         component.row(
           component.button({
             id: "jobs_access_button",
-            label: "Get Job Channel Access",
+            label: "Get job channel access",
             style: "blue"
           })
         )

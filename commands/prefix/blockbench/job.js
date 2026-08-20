@@ -102,11 +102,11 @@ registerPrefixCommand(scriptName, prefixPath, {
       })
       if (!job.position) return
       if (!await askDetailed({
-        title: "Asset Type",
+        title: "Asset type",
         question: "What type of assets do you need? For example, a **__texture__**, **__model__**, **__animation__**, **__build__**, etc…",
         options: [{
           id: "assetType",
-          label: "Asset Type",
+          label: "Asset type",
           placeholder: "texture / model / animation / build / etc",
           maxLength: 32,
           minLength: 5
@@ -182,20 +182,20 @@ registerPrefixCommand(scriptName, prefixPath, {
         options: [
           {
             id: "assetType",
-            label: "Asset Type",
+            label: "Asset type",
             placeholder: "textures / models / animations / builds / etc",
             maxLength: 32,
             minLength: 5
           },
           {
             id: "portfolio",
-            label: "Your Portfolio",
+            label: "Your portfolio",
             placeholder: "https://sketchfab.com/jannisx11",
             type: "url"
           },
           {
             id: "rate",
-            label: "Your Rate",
+            label: "Your rate",
             placeholder: "$15/h",
             maxLength: 16,
             minLength: 3
@@ -216,7 +216,7 @@ registerPrefixCommand(scriptName, prefixPath, {
         job.about = fields.about
       })) return
       if (!await askDetailed({
-        title: "Showcase Images",
+        title: "Showcase images",
         question: "Would you like to add some showcase images?",
         button: "Add images",
         skippable: true,

@@ -71,11 +71,11 @@ registerPrefixCommand(scriptName, prefixPath, {
       }
       components.push(component.section(`-# Category: ${command.parents.join(" > ").toTitleCase()}`, component.button(mode === "slash" ? {
         id: "prefix",
-        label: "Show Prefix",
+        label: "Show prefix",
         emoji: client.emotes.prefixWhite
       } : {
         id: "slash",
-        label: "Show Slash",
+        label: "Show slash",
         emoji: client.emotes.slashWhite,
         disabled: !command.slashCommand
       })))
