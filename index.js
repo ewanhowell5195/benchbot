@@ -77,7 +77,7 @@ globalThis.client = new Discord.Client({
   shards: "auto",
   intents: [
     "Guilds",
-    "GuildMembers",
+    // "GuildMembers",
     // "GuildBans",
     "GuildEmojisAndStickers",
     // "GuildIntegrations",
