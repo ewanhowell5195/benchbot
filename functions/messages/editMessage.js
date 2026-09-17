@@ -13,6 +13,7 @@ async function edit(message, content) {
     interaction.message = await interaction.editReply(content)
     return interaction
   }
+  await delayEdit(message, content)
   return message.edit(content)
 }
 

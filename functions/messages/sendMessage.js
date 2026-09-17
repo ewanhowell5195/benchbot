@@ -36,12 +36,14 @@ async function send(message, channel, processing, content) {
     }
     if (processing instanceof Discord.Message) {
       try {
+        await delayEdit(processing, content)
         return await processing.edit(content)
       } catch {}
     }
   } else {
     if (processing instanceof Discord.Message) {
       try {
+        await delayEdit(processing, content)
         return await processing.edit(content)
       } catch {}
     }

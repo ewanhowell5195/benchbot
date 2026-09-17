@@ -49,12 +49,14 @@ registerFunction(scriptName, {
       } else {
         if (data.processing instanceof Discord.Message) {
           try {
-            return await data.processing.edit({
+            const content = {
               allowedMentions: {},
               embeds: [embed],
               components: data.components,
               content: ""
-            })
+            }
+            await delayEdit(data.processing, content)
+            return await data.processing.edit(content)
           } catch {}
         }
         try {
