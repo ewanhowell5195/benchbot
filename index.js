@@ -110,7 +110,8 @@ globalThis.client = new Discord.Client({
 client.colours = {
   embed: config.colour,
   error: "#DD2E44",
-  success: "#43B481"
+  success: "#43B481",
+  warning: "#FEE75C"
 }
 client.stats = {}
 client.modPermissions = [
